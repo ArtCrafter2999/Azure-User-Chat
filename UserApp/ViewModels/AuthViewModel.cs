@@ -10,10 +10,12 @@ using NetModelsLibrary.Models;
 using NetModelsLibrary;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using Microsoft.Extensions.Configuration;
+using System.Threading;
 
 namespace UserApp.ViewModels
 {
-    public class AuthViewModel : NetworkResoulter, INotifyPropertyChanged
+    public class AuthViewModel : EndpointResoulter, INotifyPropertyChanged
     {
         public string? Login { get; set; }
         public string? Username { get; set; }
@@ -21,28 +23,51 @@ namespace UserApp.ViewModels
         public bool Visibility { get => _visibility; set { _visibility = value; OnPropertyChanged(nameof(Visibility)); } }
         private bool _visibility = false;
 
-        public ICommand Authorize => new RelayCommand(o =>
+        public void Connect()
         {
+            try
+            {
+                IConfigurationBuilder builder = new ConfigurationBuilder().AddJsonFile("appsettings.json");
+                IConfigurationRoot configuration = builder.Build();
+                Connection.EndpointCancelation = new CancellationTokenSource();
+                Connection.Endpoint = new ClientEndpoint()
+                {Token = Connection.EndpointCancelation.Token };
+                Connection.IsConnected = true;
+            }
+            catch (Exception)
+            {
+            }
+        }
+
+        public ICommand Authorize => new RelayCommand(async o =>
+        {
+            Connect();
             if (Connection.IsConnected)
             {
-                Connection.Network.WriteRequest(RequestType.Auth);
-                Connection.Network.WriteObject(new AuthModel() { Login = Login, PasswordMD5 = CreateMD5(((PasswordBox)o).Password) });
-                Invoke(Connection.Network.ReadObject<ResoultModel>());
+                Connection.Endpoint.SendRequest(new AuthModel() { Type = BusType.Auth, Login = Login, PasswordMD5 = CreateMD5(((PasswordBox)o).Password) });
+                Invoke(await Connection.Endpoint.ReceiveReply<ResoultModel>());
             }
             else
             {
                 Invoke(new ResoultModel(false, "Немає з'єднання з сервером"));
             }
         }, o => o != null && Login != null);
-        public ICommand Register => new RelayCommand(o =>
+        public ICommand Register => new RelayCommand(async o =>
         {
+            Connect();
             if (Connection.IsConnected)
             {
-                Connection.Network.WriteRequest(RequestType.Registration);
-                Connection.Network.WriteObject(new UserCreationModel() { Name = Username, Login = Login, PasswordMD5 = CreateMD5(((PasswordBox)o).Password) });
-
-                ResoultModel? resoult = Connection.Network.ReadObject<ResoultModel>();
-                Invoke(resoult);
+                Connection.Endpoint.SendRequest(new UserCreationModel() { Type = BusType.Registration, Name = Username, Login = Login, PasswordMD5 = CreateMD5(((PasswordBox)o).Password) });
+                try
+                {
+                    ResoultModel? resoult = await Connection.Endpoint.ReceiveReply<ResoultModel>();
+                    Invoke(resoult);
+                }
+                catch (Exception ex)
+                {
+                    Invoke(new ResoultModel(false, ex.Message));
+                    throw;
+                }
             }
             else
             {

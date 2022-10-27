@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\Projects\\User-Chat\\ServerDatabase\\ServerDatabase.csproj": {}
+    "D:\\Projects\\Azure-User-Chat\\ServerDatabase\\ServerDatabase.csproj": {}
   },
   "projects": {
-    "D:\\Projects\\User-Chat\\ServerDatabase\\ServerDatabase.csproj": {
+    "D:\\Projects\\Azure-User-Chat\\ServerDatabase\\ServerDatabase.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Projects\\User-Chat\\ServerDatabase\\ServerDatabase.csproj",
+        "projectUniqueName": "D:\\Projects\\Azure-User-Chat\\ServerDatabase\\ServerDatabase.csproj",
         "projectName": "ServerDatabase",
-        "projectPath": "D:\\Projects\\User-Chat\\ServerDatabase\\ServerDatabase.csproj",
+        "projectPath": "D:\\Projects\\Azure-User-Chat\\ServerDatabase\\ServerDatabase.csproj",
         "packagesPath": "C:\\Users\\User\\.nuget\\packages\\",
-        "outputPath": "D:\\Projects\\User-Chat\\ServerDatabase\\obj\\",
+        "outputPath": "D:\\Projects\\Azure-User-Chat\\ServerDatabase\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\User\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -40,9 +40,27 @@
         "net6.0": {
           "targetAlias": "net6.0",
           "dependencies": {
+            "Microsoft.EntityFrameworkCore.SqlServer": {
+              "target": "Package",
+              "version": "[6.0.10, )"
+            },
             "Microsoft.EntityFrameworkCore.Sqlite": {
               "target": "Package",
               "version": "[6.0.7, )"
+            },
+            "Microsoft.EntityFrameworkCore.Tools": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[6.0.10, )"
+            },
+            "Microsoft.Extensions.Configuration": {
+              "target": "Package",
+              "version": "[6.0.1, )"
+            },
+            "Microsoft.Extensions.Configuration.Json": {
+              "target": "Package",
+              "version": "[6.0.0, )"
             }
           },
           "imports": [
@@ -51,7 +69,8 @@
             "net47",
             "net471",
             "net472",
-            "net48"
+            "net48",
+            "net481"
           ],
           "assetTargetFallback": true,
           "warn": true,
@@ -60,7 +79,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.303\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.402\\RuntimeIdentifierGraph.json"
         }
       }
     }

@@ -18,6 +18,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Commands;
 using UserApp.ViewModels;
+using System.Configuration;
 
 namespace UserApp.Views
 {
@@ -78,13 +79,11 @@ namespace UserApp.Views
             //};
 
             OverlayGrid.AuthView.Success += _ => UpdateChatView();
-
-            IpAddress.Focus();
         }
 
         public void UpdateChatView()
         {
-            ChatController.LoadChats();
+            ChatController.LoadChatsAsync();
             SortChats();
         }
 
@@ -112,12 +111,7 @@ namespace UserApp.Views
             if (e.Key == Key.Return)
             {
                 var control = sender as Control;
-                if (control == IpAddress) {if (ConBtn.Command.CanExecute(IpAddress)) { 
-                        ConBtn.Command.Execute(IpAddress);
-                        AuthLogin.Focus();
-                    }
-                }
-
+                AuthLogin.Focus();
                 if (control == AuthLogin) AuthPassword.Focus();
                 if (control == AuthPassword) if (AuthBtn.Command.CanExecute(AuthPassword)) 
                         AuthBtn.Command.Execute(AuthPassword);
@@ -138,7 +132,7 @@ namespace UserApp.Views
             if (e.Key == Key.Return && text.Length > 0)
             {
                 (sender as TextBox).Text = "";
-                ChatController.SendMessage(new NetModelsLibrary.Models.MessageModel()
+                ChatController.SendMessageAsync(new NetModelsLibrary.Models.MessageModel()
                 {
                     ChatId = ChatController.SelectedChatModel.Id,
                     User = new NetModelsLibrary.Models.UserStatusModel()

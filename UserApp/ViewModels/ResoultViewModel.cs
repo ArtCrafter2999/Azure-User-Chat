@@ -23,7 +23,7 @@ namespace UserApp.ViewModels
             FailureVisibility = false;
             SuccessVisibility = false;
         }
-        public void AddBind(NetworkResoulter resoulter)
+        public void AddBind(EndpointResoulter resoulter)
         {
             resoulter.Success += Success;
             resoulter.Failure += Failure;

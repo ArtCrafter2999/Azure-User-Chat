@@ -9,6 +9,7 @@ using NetModelsLibrary.Models;
 using UserApp.Views;
 using System.Windows.Threading;
 using System.Windows;
+using Microsoft.Extensions.Configuration;
 #pragma warning disable SYSLIB0006
 
 namespace UserApp.Controllers
@@ -18,50 +19,41 @@ namespace UserApp.Controllers
         public MainWindow MainWindow => MainWindow.instance;
         public ChatController ChatController => MainWindow.ChatController;
 
-        CancellationTokenSource cts;
-
-        public void Stop()
-        {
-            cts.Cancel();
-        }
         public void Start()
         {
-            cts = new CancellationTokenSource();
-            var token = cts.Token;
-            Task.Factory.StartNew(() => Process(token), token);
+            Task.Factory.StartNew(() => Process(), Connection.EndpointCancelation.Token);
         }
-        public async Task Process(CancellationToken token)
+        public async Task Process()
         {
             try
             {
-                if (Connection.Stream != null)
-                {
-                    Connection.Network.Token = token;
-                    while (true)
-                    {
-                        var Info = Connection.Network.ReadObject<NotifyInfoModel>();
-                        switch (Info.Type)
-                        {
-                            case NotifyType.ChatCreated:
-                                ChatCreated(Connection.Network.ReadObject<ChatModel>());
-                                break;
-                            case NotifyType.MessageSended:
-                                MessageSended(Connection.Network.ReadObject<MessageModel>());
-                                break;
-                            case NotifyType.UserChangeStatus:
-                                UserChangeStatus(Connection.Network.ReadObject<UserStatusModel>());
-                                break;
-                            case NotifyType.ChatChanged:
-                                ChatChanged(Connection.Network.ReadObject<ChatModel>());
-                                break;
-                            case NotifyType.ChatDeleted:
-                                ChatDeleted(Connection.Network.ReadObject<IdModel>());
-                                break;
-                            default:
-                                break;
-                        }
-                    }
-                }
+                //while (true)
+                //{
+                //    IConfigurationBuilder builder = new ConfigurationBuilder().AddJsonFile("appsettings.json");
+                //    IConfigurationRoot configuration = builder.Build();
+                //    var Raw = await Connection.Endpoint.ReceiveNotify();
+                //    var Info = ClientEndpoint.Deserialize<BusTypeModel>(Raw);
+                //    switch (Info.Type)
+                //    {
+                //        case BusType.ChatCreated:
+                //            ChatCreated(ClientEndpoint.Deserialize<ChatModel>(Raw));
+                //            break;
+                //        case BusType.MessageSended:
+                //            MessageSended(ClientEndpoint.Deserialize<MessageModel>(Raw));
+                //            break;
+                //        case BusType.UserChangeStatus:
+                //            UserChangeStatus(ClientEndpoint.Deserialize<UserStatusModel>(Raw));
+                //            break;
+                //        case BusType.ChatChanged:
+                //            ChatChanged(ClientEndpoint.Deserialize<ChatModel>(Raw));
+                //            break;
+                //        case BusType.ChatDeleted:
+                //            ChatDeleted(ClientEndpoint.Deserialize<IdModel>(Raw));
+                //            break;
+                //        default:
+                //            break;
+                //    }
+                //}
             }
             catch (OperationCanceledException)
             {
@@ -117,8 +109,7 @@ namespace UserApp.Controllers
                 if (MainWindow.ChatView.IsSelected &&
                     model.ChatId == ChatController.SelectedChatModel.Id)
                 {
-                    Connection.Network.WriteRequest(RequestType.MarkReaded);
-                    Connection.Network.WriteObject(new IdModel(model.ChatId));
+                    Connection.Endpoint.SendRequest(new IdModel(model.ChatId) { Type = BusType.MarkReaded });
                     var message = new Models.MessageModel(model);
                     MainWindow.ChatView.MessageDown(message);
                     ChatController.SelectedChatModel.LastMessage = message;

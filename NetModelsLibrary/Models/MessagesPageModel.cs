@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace NetModelsLibrary.Models
 {
-    public class MessagesPageModel
+    public class MessagesPageModel : BusTypeModel
     {
         public List<MessageModel> Messages { get; set; } = new List<MessageModel>();
         public int From { get; set; }

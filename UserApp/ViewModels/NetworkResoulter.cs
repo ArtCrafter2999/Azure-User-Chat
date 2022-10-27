@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace UserApp.ViewModels
 {
-    public abstract class NetworkResoulter
+    public abstract class EndpointResoulter
     {
         public event Action<ResoultModel>? Success;
         public event Action<ResoultModel>? Failure;

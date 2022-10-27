@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace NetModelsLibrary.Models
 {
-    public class FileModel
+    public class FileModel : BusTypeModel
     {
         public byte[] Data { get; set; }
         public int DataSize { get; set; }

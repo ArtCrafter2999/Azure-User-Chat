@@ -9,9 +9,9 @@ using ServerClasses;
 
 namespace Server
 {
-    public class ConsoleOutput : IRequestTypeMethods, IRequestTypeMethodsBind
+    public class ConsoleOutput
     {
-        public void Bind(IRequestTypeEvents events)
+        public void Bind(RequestListenerBase events)
         {
             events.OnAuth += OnAuth;
             events.OnChangeChat += OnChangeChat;
@@ -83,11 +83,11 @@ namespace Server
             Console.WriteLine($"Unknown user has connected");
         }
 
-        public void OnSuccess(RequestType type, string message)
+        public void OnSuccess(BusType type, string message)
         {
             Console.WriteLine($"{type} resoult: Success; Description: {message}");
         }
-        public void OnFailure(RequestType type, string message)
+        public void OnFailure(BusType type, string message)
         {
             Console.WriteLine($"{type} resoult: Failure; Description: {message}");
         }

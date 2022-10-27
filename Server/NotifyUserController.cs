@@ -28,7 +28,7 @@ namespace Server
                 if (user.Id != Handler.User.Id && IsUserOnline(user.Id))
                 {
                     var userNetwork = DataBaseHandler.NetworkOfId[user.Id];
-                    userNetwork.WriteNotify(NotifyType.ChatCreated);
+                    model.Type = BusType.ChatCreated;
                     model.Title = origTitle ?? Handler.GenerateChatName(model, user);
                     userNetwork.WriteObject(model);
                 }
@@ -49,13 +49,13 @@ namespace Server
                     if (IsUserOnline(user.Id))
                     {
                         var userNetwork = DataBaseHandler.NetworkOfId[user.Id];
-                        userNetwork.WriteNotify(NotifyType.MessageSended);
+                        message.Type = BusType.MessageSended;
                         userNetwork.WriteObject(message);
                     }
                 }
                 else
                 {
-                    Handler.network.WriteNotify(NotifyType.MessageSended);
+                    message.Type = BusType.MessageSended;
                     Handler.network.WriteObject(message);
                 }
             }
@@ -69,8 +69,7 @@ namespace Server
                 if (IsUserOnline(user.Id))
                 {
                     var net = DataBaseHandler.NetworkOfId[user.Id];
-                    net.WriteNotify(NotifyType.UserChangeStatus);
-                    net.WriteObject(new UserStatusModel(Handler.User, IsUserOnline(Handler.User.Id)));
+                    net.WriteObject(new UserStatusModel(Handler.User, IsUserOnline(Handler.User.Id)) { Type = BusType.UserChangeStatus });
                 }
             }
         }
@@ -82,7 +81,7 @@ namespace Server
                 if (IsUserOnline(user.Id))
                 {
                     var net = DataBaseHandler.NetworkOfId[user.Id];
-                    net.WriteNotify(NotifyType.ChatCreated);
+                    model.Type = BusType.ChatCreated;
                     net.WriteObject(model);
                 }
             }
@@ -91,8 +90,7 @@ namespace Server
                 if (IsUserOnline(user.Id))
                 {
                     var net = DataBaseHandler.NetworkOfId[user.Id];
-                    net.WriteNotify(NotifyType.ChatDeleted);
-                    net.WriteObject(new IdModel(model.Id));
+                    net.WriteObject(new IdModel(model.Id) { Type = BusType.ChatDeleted });
                 }
             }
             foreach (var user in notChanged)
@@ -100,7 +98,7 @@ namespace Server
                 if (IsUserOnline(user.Id))
                 {
                     var net = DataBaseHandler.NetworkOfId[user.Id];
-                    net.WriteNotify(NotifyType.ChatChanged);
+                    model.Type = BusType.ChatChanged;
                     net.WriteObject(model);
                 }
             }
@@ -112,7 +110,7 @@ namespace Server
                 if (IsUserOnline(user.Id))
                 {
                     var net = DataBaseHandler.NetworkOfId[user.Id];
-                    net.WriteNotify(NotifyType.ChatDeleted);
+                    id.Type = BusType.ChatDeleted;
                     net.WriteObject(id);
                 }
             }

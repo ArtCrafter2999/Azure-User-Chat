@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "YwroCLDVgBil1Wrmd9L7yOyE21nqEyMjhNAVwPDPvu0zWUwlYKLjGBFc8UI38R6MNx4Cc/hFu+BTl6o7lau08w==",
+  "dgSpecHash": "/rI+20YmNwaeJhfIUvcYhKnpewnXrMOd/CEDi9OJp3ZXScroKudUJHcBeTJ4Cfw6rlYlp04gh3FD0o6obipFeg==",
   "success": true,
-  "projectFilePath": "D:\\Projects\\User-Chat\\WebServer\\WebServer.csproj",
+  "projectFilePath": "D:\\Projects\\Azure-User-Chat\\WebServer\\WebServer.csproj",
   "expectedPackageFiles": [],
   "logs": []
 }

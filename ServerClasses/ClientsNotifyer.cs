@@ -10,16 +10,9 @@ using System.Threading.Tasks;
 
 namespace ServerClasses
 {
-    public class ClientsNotifyer : IClientsNotifyer
+    public class ClientsNotifyer : ClientsNotifyerBase
     {
-        public IClient Client { get; set; }
-        public IRequestResponse Respondent { get; set; }
-        public IRequestListener Listener { get; set; }
-        public IClientsNotifyer Notifyer { get; set; }
-        public IRequestHandler Handler { get; set; }
-        public INetwork Network { get; set; }
-
-        public void ChatChanged(Chat model, List<User> added, List<User> removed, List<User> notChanged)
+        public override void ChatChanged(Chat model, List<User> added, List<User> removed, List<User> notChanged)
         {
             MessageModel? messageModel = null;
             try
@@ -63,27 +56,26 @@ namespace ServerClasses
             {
                 if (Client.IsUserOnline(user.Id))
                 {
-                    var net = Client.GetOnlineUser(user.Id).Network;
-                    net.WriteNotify(NotifyType.ChatCreated);
-                    net.WriteObject(reschat);
+                    var net = Client.GetOnlineUserEndpoint(user.Id);
+                    reschat.Type = BusType.ChatCreated;
+                    net.Send(reschat);
                 }
             }
             foreach (var user in removed)
             {
                 if (Client.IsUserOnline(user.Id))
                 {
-                    var net = Client.GetOnlineUser(user.Id).Network;
-                    net.WriteNotify(NotifyType.ChatDeleted);
-                    net.WriteObject(new IdModel(reschat.Id));
+                    var net = Client.GetOnlineUserEndpoint(user.Id);
+                    net.Send(new IdModel(reschat.Id) { Type = BusType.ChatDeleted });
                 }
             }
             foreach (var user in notChanged)
             {
                 if (Client.IsUserOnline(user.Id))
                 {
-                    var net = Client.GetOnlineUser(user.Id).Network;
-                    net.WriteNotify(NotifyType.ChatChanged);
-                    net.WriteObject(reschat);
+                    var net = Client.GetOnlineUserEndpoint(user.Id);
+                    reschat.Type = BusType.ChatChanged;
+                    net.Send(reschat);
                 }
             }
         }
@@ -112,7 +104,7 @@ namespace ServerClasses
             return string.Join(", ", names);
         }
 
-        public void ChatCreated(Chat model)
+        public override void ChatCreated(Chat model)
         {
             var userStatusModels = new List<UserStatusModel>();
             foreach (var user in model.Users)
@@ -136,29 +128,28 @@ namespace ServerClasses
             {
                 if (user.Id != Client.User.Id && Client.IsUserOnline(user.Id))
                 {
-                    var userNetwork = Client.GetOnlineUser(user.Id).Network;
-                    userNetwork.WriteNotify(NotifyType.ChatCreated);
+                    var userEndpoint = Client.GetOnlineUserEndpoint(user.Id);
+                    chat.Type = BusType.ChatCreated;
                     chat.Title = model.Title ?? GenerateChatName(chat, user);
-                    userNetwork.WriteObject(chat);
+                    userEndpoint.Send(chat);
                 }
             }
 
         }
 
-        public void ChatDeleted(int ChatId, List<User> users)
+        public override void ChatDeleted(int ChatId, List<User> users)
         {
             foreach (var user in users)
             {
                 if (Client.IsUserOnline(user.Id))
                 {
-                    var net = Client.GetOnlineUser(user.Id).Network;
-                    net.WriteNotify(NotifyType.ChatDeleted);
-                    net.WriteObject(new IdModel(ChatId));
+                    var net = Client.GetOnlineUserEndpoint(user.Id);
+                    net.Send(new IdModel(ChatId) { Type = BusType.ChatDeleted });
                 }
             }
         }
 
-        public void MessageSended(Message message, Chat chat)
+        public override void MessageSended(Message message, Chat chat)
         {
             var model = new MessageModel(message, Client.IsUserOnline(message.User.Id));
             foreach (var user in chat.Users)
@@ -168,15 +159,15 @@ namespace ServerClasses
                     AddUnreaded(chat.Id, user.Id);
                     if (Client.IsUserOnline(user.Id))
                     {
-                        var userNetwork = Client.GetOnlineUser(user.Id).Network;
-                        userNetwork.WriteNotify(NotifyType.MessageSended);
-                        userNetwork.WriteObject(model);
+                        var userEndpoint = Client.GetOnlineUserEndpoint(user.Id);
+                        model.Type = BusType.MessageSended;
+                        userEndpoint.Send(model);
                     }
                 }
                 else
                 {
-                    Network.WriteNotify(NotifyType.MessageSended);
-                    Network.WriteObject(model);
+                    model.Type = BusType.MessageSended;
+                    Endpoint.Send(model);
                 }
             }
         }
@@ -203,16 +194,15 @@ namespace ServerClasses
             return res;
         }
 
-        public void UserChangeStatus()
+        public override void UserChangeStatus()
         {
             var rel = GetRelativeUsers();
             foreach (var user in rel)
             {
                 if (Client.IsUserOnline(user.Id))
                 {
-                    var net = Client.GetOnlineUser(user.Id).Network;
-                    net.WriteNotify(NotifyType.UserChangeStatus);
-                    net.WriteObject(new UserStatusModel(Client.User, Client.IsUserOnline(Client.User.Id)));
+                    var net = Client.GetOnlineUserEndpoint(user.Id);
+                    net.Send(new UserStatusModel(Client.User, Client.IsUserOnline(Client.User.Id)) { Type = BusType.UserChangeStatus });
                 }
             }
         }

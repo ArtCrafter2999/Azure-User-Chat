@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace NetModelsLibrary.Models
 {
-    public class AllChatsModel
+    public class AllChatsModel : BusTypeModel
     {
         public UserStatusModel User { get; set; }
         public List<ChatModel> Chats { get; set; }

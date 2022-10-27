@@ -54,40 +54,40 @@ namespace Server
                     {
                         try
                         {
-                            var Info = network.ReadObject<RequestInfoModel>();
+                            var Info = network.ReadObject<BusTypeModel>();
                             switch (Info.Type)
                             {
-                                case RequestType.Registration:
+                                case BusType.Registration:
                                     handler.Registration(network.ReadObject<UserCreationModel>());
                                     break;
-                                case RequestType.SendMessage:
+                                case BusType.SendMessage:
                                     handler.SendMessage(network.ReadObject<MessageModel>());
                                     break;
-                                case RequestType.Auth:
+                                case BusType.Auth:
                                     handler.Auth(network.ReadObject<AuthModel>());
                                     break;
-                                case RequestType.GetAllChats:
+                                case BusType.GetAllChats:
                                     handler.GetAllChats();
                                     break;
-                                case RequestType.CreateChat:
+                                case BusType.CreateChat:
                                     handler.CreateChat(network.ReadObject<ChatCreationModel>());
                                     break;
-                                case RequestType.SearchUsers:
+                                case BusType.SearchUsers:
                                     handler.SearchUsers(network.ReadObject<SearchModel>());
                                     break;
-                                case RequestType.GetPageOfMessages:
+                                case BusType.GetPageOfMessages:
                                     handler.GetPageOfMessages(network.ReadObject<GetMessagesInfoModel>());
                                     break;
-                                case RequestType.ReadUnreaded:
+                                case BusType.ReadUnreaded:
                                     handler.ReadUnreaded(network.ReadObject<IdModel>());
                                     break;
-                                case RequestType.MarkReaded:
+                                case BusType.MarkReaded:
                                     handler.MarkReaded(network.ReadObject<IdModel>());
                                     break;
-                                case RequestType.ChangeChat:
+                                case BusType.ChangeChat:
                                     handler.ChangeChat(network.ReadObject<ChatChangeModel>());
                                     break;
-                                case RequestType.DeleteChat:
+                                case BusType.DeleteChat:
                                     handler.DeleteChat(network.ReadObject<IdModel>());
                                     break;
                                 default:
@@ -96,7 +96,7 @@ namespace Server
                         }
                         catch (OperationFailureExeption ex)
                         {
-                            network.WriteObject(new ResoultModel(ex.RequestType, false, ex.Message));
+                            network.WriteObject(new ResoultModel(ex.BusType, false, ex.Message));
                             Console.WriteLine(ex.Message);
                         }
                         catch (InvalidOperationException ex)

@@ -9,6 +9,7 @@ using System.Windows.Threading;
 using System.Windows.Media;
 using System.Windows.Controls;
 using System.Windows;
+using NetModelsLibrary;
 
 namespace UserApp.ViewModels
 {
@@ -40,7 +41,7 @@ namespace UserApp.ViewModels
             {
                 Interval = new TimeSpan(0, 0, 0, 0, 700),
             };
-            timer.Tick += (_, __) => { if (SearchModel.SearchString != null && SearchModel.SearchString != "") SearchRequestSend(); };
+            timer.Tick += (_, __) => { if (SearchModel.SearchString != null && SearchModel.SearchString != "") SearchRequestSendAsync(); };
 
         }
         public void UpdateUsersList()
@@ -92,14 +93,14 @@ namespace UserApp.ViewModels
             }
         }
         private string _pastResult = "";
-        public void SearchRequestSend()
+        public async void SearchRequestSendAsync()
         {
             if (SearchModel.SearchString != _pastResult)
             {
                 _pastResult = SearchModel.SearchString;
-                Connection.Network.WriteRequest(NetModelsLibrary.RequestType.SearchUsers);
-                Connection.Network.WriteObject(SearchModel);
-                var allusers = Connection.Network.ReadObject<NetModelsLibrary.Models.AllUsersModel>();
+                SearchModel.Type = BusType.SearchUsers;
+                await Connection.Endpoint.SendRequest(SearchModel);
+                var allusers = await Connection.Endpoint.ReceiveReply<NetModelsLibrary.Models.AllUsersModel>();
                 Users.Clear();
                 foreach (var user in allusers.Users)
                 {

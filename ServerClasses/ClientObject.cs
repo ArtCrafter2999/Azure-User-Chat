@@ -10,20 +10,10 @@ using System.Threading.Tasks;
 
 namespace ServerClasses
 {
-    public class ClientObject : IClient
+    public class ClientObject : ClientBase
     {
-        public INetwork Network { get; set; }
-        public IRequestResponse Respondent { get; set; }
-        public IRequestListener Listener { get; set; }
-        public IClientsNotifyer Notifyer { get; set; }
-        public IRequestHandler Handler { get; set; }
-        public IClient Client { get; set; }
-
         private static Dictionary<int, ClientObject> UsersOnline { get; set; } = new Dictionary<int, ClientObject>();
         public const int PageSize = 20;
-
-        public TcpClient TcpClient { get; set; }
-        public NetworkStream NetworkStream => TcpClient.GetStream();
 
         private User? _user;
 
@@ -45,51 +35,52 @@ namespace ServerClasses
             set { _user = value; }
         }
 
-        public ClientObject(TcpClient tcpClient)
-        {
-            TcpClient = tcpClient;
-        }
-
-        public void Disconect()
+        public override void Disconect()
         {
             UserOffline();
-            if (NetworkStream != null) NetworkStream.Close();
-            if (TcpClient != null) TcpClient.Close();
             OnDisconected?.Invoke(User);
         }
 
-        public void UserOnline()
+        public override void UserOnline()
         {
-            try
-            {
-                UsersOnline.Add(User.Id, this);
-                Notifyer.UserChangeStatus();
-            }
-            catch { }
+            //try
+            //{
+            //    UsersOnline.Add(User.Id, this);
+            //    Notifyer.UserChangeStatus();
+            //}
+            //catch { }
         }
-        public void UserOffline()
+        public override void UserOffline()
         {
-            try
-            {
-                UsersOnline.Remove(User.Id);
-                using (var db = new ServerDbContext())
-                {
-                    User.LastOnline = DateTime.Now;
-                    db.SaveChanges();
-                }
-                Notifyer.UserChangeStatus();
-            }
-            catch{}
-        }
-
-        public ClientObject GetOnlineUser(int userId)
-        {
-            return UsersOnline[userId];
+            //try
+            //{
+            //    UsersOnline.Remove(User.Id);
+            //    using (var db = new ServerDbContext())
+            //    {
+            //        User.LastOnline = DateTime.Now;
+            //        db.SaveChanges();
+            //    }
+            //    Notifyer.UserChangeStatus();
+            //}
+            //catch{}
         }
 
-        public bool IsUserOnline(int userId)
+        public override ServerEndpoint GetOnlineUserEndpoint(int userId)
         {
-            return UsersOnline.ContainsKey(userId);
+            return new NotifyEndpoint(userId);
+        }
+
+        public override bool IsUserOnline(int userId)
+        {
+            return true /*UsersOnline.ContainsKey(userId)*/;
+        }
+
+        public override void SetUser(int userId)
+        {
+            using (ServerDbContext db = new ServerDbContext())
+            {
+                _user = db.Users.Find(userId);
+            }
         }
     }
 }

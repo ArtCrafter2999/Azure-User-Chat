@@ -9,17 +9,17 @@ using System.Threading.Tasks;
 
 namespace ServerClasses
 {
-    public class RequestResponse : IRequestResponse
+    public class RequestResponse : RequestResponseBase
     {
-        public IClient Client { get; set; }
-        public IRequestResponse Respondent { get; set; }
-        public IRequestListener Listener { get; set; }
-        public IClientsNotifyer Notifyer { get; set; }
-        public IRequestHandler Handler { get; set; }
-        public INetwork Network { get; set; }
+        public ClientBase Client { get; set; }
+        public RequestResponseBase Respondent { get => Client.Respondent; set { Client.Respondent = value; } }
+        public RequestListenerBase Listener { get => Client.Listener; set { Client.Listener = value; } }
+        public ClientsNotifyerBase Notifyer { get => Client.Notifyer; set { Client.Notifyer = value; } }
+        public RequestHandlerBase Handler { get => Client.Handler; set { Client.Handler = value; } }
+        public ServerEndpoint Endpoint { get => Client.Endpoint; set { Client.Endpoint = value; } }
 
-        public event Action<RequestType, string> OnSuccess;
-        public event Action<RequestType, string> OnFailure;
+        public event Action<BusType, string> OnSuccess;
+        public event Action<BusType, string> OnFailure;
 
         public string GenerateChatName(Chat chat)
         {
@@ -46,7 +46,7 @@ namespace ServerClasses
             return string.Join(", ", names);
         }
 
-        public void ResponseChats(IEnumerable<Chat> chats)
+        public override void ResponseChats(IEnumerable<Chat> chats)
         {
             AllChatsModel res = new AllChatsModel();
             res.User = new UserStatusModel()
@@ -95,21 +95,21 @@ namespace ServerClasses
                     Unreaded = chat.UserChatRelatives.Find(ucr => ucr.User.Id == Client.User.Id).Unreaded
                 }); ;
             }
-            Network.WriteObject(res);
+            Endpoint.Send(res);
         }
 
-        public void ResponseFailure(RequestType type, string message)
+        public override void ResponseFailure(BusType type, string message)
         {
             OnFailure?.Invoke(type, message);
-            Network.WriteObject(new ResoultModel(type, false, message));
+            Endpoint.Send(new ResoultModel(type, false, message));
         }
-        public void ResponseSuccess(RequestType type, string message)
+        public override void ResponseSuccess(BusType type, string message)
         {
             OnSuccess?.Invoke(type, message);
-            Network.WriteObject(new ResoultModel(type, true, message));
+            Endpoint.Send(new ResoultModel(type, true, message) {ToUserId = Client.User.Id});
         }
 
-        public void ResponseMessagePage(int from, IEnumerable<Message> messages)
+        public override void ResponseMessagePage(int from, IEnumerable<Message> messages)
         {
             var page = new MessagesPageModel()
             {
@@ -122,17 +122,17 @@ namespace ServerClasses
             {
                 page.Messages.Add(new MessageModel(message, Client.IsUserOnline(message.User.Id)));
             }
-            Network.WriteObject(page);
+            Endpoint.Send(page);
         }
 
-        public void ResponseUsers(IEnumerable<User> users)
+        public override void ResponseUsers(IEnumerable<User> users)
         {
             var res = new AllUsersModel();
             foreach (var user in users)
             {
                 res.Users.Add(new UserStatusModel(user, Client.IsUserOnline(user.Id)));
             }
-            Network.WriteObject(res);
+            Endpoint.Send(res);
         }
     }
 }

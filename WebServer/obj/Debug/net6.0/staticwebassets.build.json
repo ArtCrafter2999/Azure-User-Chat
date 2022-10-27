@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "7wfpUsM8qHJSCbCfQ9DOo2gs29k3BLlhd3sZlKRBEUc=",
+  "Hash": "6S8tjp84Vcb3rJC5tPHFYQWHl5m0pEvaxiIK/9RIxqA=",
   "Source": "WebServer",
   "BasePath": "_content/WebServer",
   "Mode": "Default",
@@ -10,17 +10,17 @@
     {
       "Name": "WebServer\\wwwroot",
       "Source": "WebServer",
-      "ContentRoot": "D:\\Projects\\User-Chat\\WebServer\\wwwroot\\",
+      "ContentRoot": "D:\\Projects\\Azure-User-Chat\\WebServer\\wwwroot\\",
       "BasePath": "_content/WebServer",
       "Pattern": "**"
     }
   ],
   "Assets": [
     {
-      "Identity": "D:\\Projects\\User-Chat\\WebServer\\wwwroot\\js\\chat.js",
+      "Identity": "D:\\Projects\\Azure-User-Chat\\WebServer\\wwwroot\\js\\chat.js",
       "SourceId": "WebServer",
       "SourceType": "Discovered",
-      "ContentRoot": "D:\\Projects\\User-Chat\\WebServer\\wwwroot\\",
+      "ContentRoot": "D:\\Projects\\Azure-User-Chat\\WebServer\\wwwroot\\",
       "BasePath": "_content/WebServer",
       "RelativePath": "js/chat.js",
       "AssetKind": "All",
@@ -34,10 +34,10 @@
       "OriginalItemSpec": "wwwroot\\js\\chat.js"
     },
     {
-      "Identity": "D:\\Projects\\User-Chat\\WebServer\\wwwroot\\js\\signalr\\dist\\browser\\signalr.js",
+      "Identity": "D:\\Projects\\Azure-User-Chat\\WebServer\\wwwroot\\js\\signalr\\dist\\browser\\signalr.js",
       "SourceId": "WebServer",
       "SourceType": "Discovered",
-      "ContentRoot": "D:\\Projects\\User-Chat\\WebServer\\wwwroot\\",
+      "ContentRoot": "D:\\Projects\\Azure-User-Chat\\WebServer\\wwwroot\\",
       "BasePath": "_content/WebServer",
       "RelativePath": "js/signalr/dist/browser/signalr.js",
       "AssetKind": "All",
@@ -51,10 +51,10 @@
       "OriginalItemSpec": "wwwroot\\js\\signalr\\dist\\browser\\signalr.js"
     },
     {
-      "Identity": "D:\\Projects\\User-Chat\\WebServer\\wwwroot\\js\\signalr\\dist\\browser\\signalr.min.js",
+      "Identity": "D:\\Projects\\Azure-User-Chat\\WebServer\\wwwroot\\js\\signalr\\dist\\browser\\signalr.min.js",
       "SourceId": "WebServer",
       "SourceType": "Discovered",
-      "ContentRoot": "D:\\Projects\\User-Chat\\WebServer\\wwwroot\\",
+      "ContentRoot": "D:\\Projects\\Azure-User-Chat\\WebServer\\wwwroot\\",
       "BasePath": "_content/WebServer",
       "RelativePath": "js/signalr/dist/browser/signalr.min.js",
       "AssetKind": "All",

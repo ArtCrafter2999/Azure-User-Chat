@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Commands;
 using System.Windows.Input;
 using System.Windows.Controls;
+using NetModelsLibrary;
 
 namespace UserApp.ViewModels
 {
@@ -29,16 +30,16 @@ namespace UserApp.ViewModels
 
         public event Action ChatCreated;
 
-        public ICommand Create => new RelayCommand(o =>
+        public ICommand Create => new RelayCommand(async o =>
         {
             ChatCreationModel.Users = new List<NetModelsLibrary.Models.IdModel>();
             foreach (var user in AddedUsers)
             {
                 ChatCreationModel.Users.Add(new NetModelsLibrary.Models.IdModel(user.Id));
             }
-            Connection.Network.WriteRequest(NetModelsLibrary.RequestType.CreateChat);
-            Connection.Network.WriteObject(ChatCreationModel);
-            if (Connection.Network.ReadObject<NetModelsLibrary.Models.ResoultModel>().Success) ChatCreated?.Invoke();
+            ChatCreationModel.Type = BusType.CreateChat;
+            await Connection.Endpoint.SendRequest(ChatCreationModel);
+            if ((await Connection.Endpoint.ReceiveReply<NetModelsLibrary.Models.ResoultModel>()).Success) ChatCreated?.Invoke();
 
             MainWindow.OverlayGrid.HideAll();
             AddedUsers.Clear();
@@ -78,8 +79,8 @@ namespace UserApp.ViewModels
             {
                 ChatChangeModel.Users.Add(new NetModelsLibrary.Models.IdModel(user.Id));
             }
-            Connection.Network.WriteRequest(NetModelsLibrary.RequestType.ChangeChat);
-            Connection.Network.WriteObject(ChatChangeModel);
+            ChatChangeModel.Type = BusType.ChangeChat;
+            Connection.Endpoint.SendRequest(ChatChangeModel);
 
             MainWindow.ChatController.SelectedChatModel = null;
             MainWindow.OverlayGrid.HideAll();
@@ -93,8 +94,7 @@ namespace UserApp.ViewModels
         }, o => AddedUsers.Count > 0);
         public ICommand Delete => new RelayCommand(o =>
         {
-            Connection.Network.WriteRequest(NetModelsLibrary.RequestType.DeleteChat);
-            Connection.Network.WriteObject(new NetModelsLibrary.Models.IdModel(ChatChangeModel.Id));
+            Connection.Endpoint.SendRequest(new NetModelsLibrary.Models.IdModel(ChatChangeModel.Id) { Type = BusType.DeleteChat });
 
             MainWindow.ChatController.SelectedChatModel = null;
             MainWindow.OverlayGrid.HideAll();

@@ -10,3 +10,17 @@ D:\Projects\User-Chat\ServerDatabase\obj\Debug\net6.0\ServerDatabase.dll
 D:\Projects\User-Chat\ServerDatabase\obj\Debug\net6.0\refint\ServerDatabase.dll
 D:\Projects\User-Chat\ServerDatabase\obj\Debug\net6.0\ServerDatabase.pdb
 D:\Projects\User-Chat\ServerDatabase\obj\Debug\net6.0\ref\ServerDatabase.dll
+D:\Projects\Azure-User-Chat\ServerDatabase\bin\Debug\net6.0\ServerDatabase.deps.json
+D:\Projects\Azure-User-Chat\ServerDatabase\bin\Debug\net6.0\ServerDatabase.dll
+D:\Projects\Azure-User-Chat\ServerDatabase\bin\Debug\net6.0\ServerDatabase.pdb
+D:\Projects\Azure-User-Chat\ServerDatabase\obj\Debug\net6.0\ServerDatabase.csproj.AssemblyReference.cache
+D:\Projects\Azure-User-Chat\ServerDatabase\obj\Debug\net6.0\ServerDatabase.GeneratedMSBuildEditorConfig.editorconfig
+D:\Projects\Azure-User-Chat\ServerDatabase\obj\Debug\net6.0\ServerDatabase.AssemblyInfoInputs.cache
+D:\Projects\Azure-User-Chat\ServerDatabase\obj\Debug\net6.0\ServerDatabase.AssemblyInfo.cs
+D:\Projects\Azure-User-Chat\ServerDatabase\obj\Debug\net6.0\ServerDatabase.csproj.CoreCompileInputs.cache
+D:\Projects\Azure-User-Chat\ServerDatabase\obj\Debug\net6.0\ServerDatabase.dll
+D:\Projects\Azure-User-Chat\ServerDatabase\obj\Debug\net6.0\refint\ServerDatabase.dll
+D:\Projects\Azure-User-Chat\ServerDatabase\obj\Debug\net6.0\ServerDatabase.pdb
+D:\Projects\Azure-User-Chat\ServerDatabase\obj\Debug\net6.0\ref\ServerDatabase.dll
+D:\Projects\Azure-User-Chat\ServerDatabase\bin\Debug\net6.0\ServerDatabase.runtimeconfig.json
+D:\Projects\Azure-User-Chat\ServerDatabase\obj\Debug\net6.0\ServerDatabase.genruntimeconfig.cache

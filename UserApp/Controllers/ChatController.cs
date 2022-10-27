@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using UserApp.Views;
 using UserApp.Models;
 using System.Windows;
+using NetModelsLibrary;
 
 namespace UserApp.Controllers
 {
@@ -41,10 +42,10 @@ namespace UserApp.Controllers
             };
         }
 
-        public void LoadChats()
+        public async void LoadChatsAsync()
         {
-            Connection.Network.WriteRequest(NetModelsLibrary.RequestType.GetAllChats);
-            var allchats = Connection.Network.ReadObject<NetModelsLibrary.Models.AllChatsModel>();
+            Connection.Endpoint.SendRequest(new NetModelsLibrary.BusTypeModel(BusType.GetAllChats));
+            var allchats = await Connection.Endpoint.ReceiveReply<NetModelsLibrary.Models.AllChatsModel>();
             SelfUser = new UserModel(allchats.User);
             ChatModels.Clear();
             foreach (var NetChatModel in allchats.Chats)
@@ -52,27 +53,27 @@ namespace UserApp.Controllers
                 ChatModels.Add(new ChatModel(NetChatModel));
             }
         }
-        public NetModelsLibrary.Models.MessagesPageModel LoadMessages(int From)
+        public async Task<NetModelsLibrary.Models.MessagesPageModel> LoadMessagesAsync(int From)
         {
             if (!SelectedChatModel.IsEnd)
             {
-                Connection.Network.WriteRequest(NetModelsLibrary.RequestType.GetPageOfMessages);
-                Connection.Network.WriteObject(new NetModelsLibrary.Models.GetMessagesInfoModel()
+                await Connection.Endpoint.SendRequest(new NetModelsLibrary.Models.GetMessagesInfoModel()
                 {
                     ChatId = SelectedChatModel.Id,
-                    From = From
+                    From = From,
+                    Type = BusType.GetPageOfMessages
                 });
-                return Connection.Network.ReadObject<NetModelsLibrary.Models.MessagesPageModel>();
+                return Connection.Endpoint.ReceiveReply<NetModelsLibrary.Models.MessagesPageModel>().Result;
             }
             return new NetModelsLibrary.Models.MessagesPageModel() { Messages = new List<NetModelsLibrary.Models.MessageModel>(), From = From, To = From};
         }
-        public void SendMessage(NetModelsLibrary.Models.MessageModel message)
+        public async void SendMessageAsync(NetModelsLibrary.Models.MessageModel message)
         {
-            Connection.Network.WriteRequest(NetModelsLibrary.RequestType.SendMessage);
-            Connection.Network.WriteObject(message);
+            message.Type = BusType.SendMessage;
+            await Connection.Endpoint.SendRequest(message);
             //MessageSended.Invoke(
             //    new MessageModel(
-            //        Connection.Network.ReadObject
+            //        Connection.Endpoint.ReceiveReply
             //            <NetModelsLibrary.Models.MessageModel>()
             //    )
             //);

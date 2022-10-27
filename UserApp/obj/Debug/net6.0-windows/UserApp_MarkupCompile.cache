@@ -4,16 +4,16 @@
 winexe
 C#
 .cs
-D:\Projects\User-Chat\UserApp\obj\Debug\net6.0-windows\
+D:\Projects\Azure-User-Chat\UserApp\obj\Debug\net6.0-windows\
 UserApp
 none
 false
 TRACE;DEBUG;NET;NET6_0;NETCOREAPP
-D:\Projects\User-Chat\UserApp\App.xaml
+D:\Projects\Azure-User-Chat\UserApp\App.xaml
 4-154591615
 
-241855005861
-214681212872
+23-368883831
+234-1815038421
 Views\ChatView.xaml;Views\MainWindow.xaml;Views\MessageView.xaml;Views\UserView.xaml;
 
 False

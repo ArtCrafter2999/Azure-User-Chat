@@ -10,31 +10,11 @@ using System.Threading.Tasks;
 
 namespace ServerClasses
 {
-    public class RequestHandler : IRequestHandler
+    public class RequestHandler : RequestHandlerBase
     {
-        public INetwork Network { get; set; }
-        public IClient Client { get; set; }
-        public IRequestResponse Respondent { get; set; }
-        public IRequestListener Listener { get; set; }
-        public IClientsNotifyer Notifyer { get; set; }
-        public IRequestHandler Handler { get; set; }
+        public RequestHandler(RequestListenerBase listenerBase) : base(listenerBase) {}
 
-        public void Bind(IRequestTypeEvents events)
-        {
-            events.OnAuth += OnAuth;
-            events.OnChangeChat += OnChangeChat;
-            events.OnCreateChat += OnCreateChat;
-            events.OnDeleteChat += OnDeleteChat;
-            events.OnGetAllChats += OnGetAllChats;
-            events.OnGetPageOfMessages += OnGetPageOfMessages;
-            events.OnMarkReaded += OnMarkReaded;
-            events.OnReadUnreaded += OnReadUnreaded;
-            events.OnRegistration += OnRegistration;
-            events.OnSearchUsers += OnSearchUsers;
-            events.OnSendMessage += OnSendMessage;
-        }
-
-        public void OnRegistration(UserCreationModel model)
+        public override void OnRegistration(UserCreationModel model)
         {
             try
             {
@@ -59,15 +39,15 @@ namespace ServerClasses
                         throw new OperationFailureExeption($"Login '{model.Login}' is alrady exist, request rejected");
                     }
                 }
-                Respondent.ResponseSuccess(RequestType.Registration, "You registered successfuly");
+                Respondent.ResponseSuccess(BusType.Registration, "You registered successfuly");
                 Client.UserOnline();
             }
             catch (OperationFailureExeption ex)
             {
-                Respondent.ResponseFailure(RequestType.Registration, ex.Message);
+                Respondent.ResponseFailure(BusType.Registration, ex.Message);
             }
         }
-        public void OnAuth(AuthModel model)
+        public override void OnAuth(AuthModel model)
         {
             try
             {
@@ -76,9 +56,7 @@ namespace ServerClasses
                     var user = db.Users.Count() > 0 ? db.Users.Where((u) => u.Login == model.Login).FirstOrDefault() : null;
                     if (user != null && user.PasswordMD5 == model.PasswordMD5)
                     {
-                        if (!Client.IsUserOnline(user.Id))
-                            Client.User = user;
-                        else throw new OperationFailureExeption($"У ваш аккаунт вже виконан вхід з іншого вікна");
+                        Client.User = user;
 
                     }
                     else
@@ -86,16 +64,16 @@ namespace ServerClasses
                         throw new OperationFailureExeption($"Incorrect login or password (а конкретно {(user == null ? "логін" : "пароль")})");
                     }
                 }
-                Respondent.ResponseSuccess(RequestType.Auth, "You authorized successfuly");
+                Respondent.ResponseSuccess(BusType.Auth, "You authorized successfuly");
                 Client.UserOnline();
             }
             catch (OperationFailureExeption ex)
             {
-                Respondent.ResponseFailure(RequestType.Auth, ex.Message);
+                Respondent.ResponseFailure(BusType.Auth, ex.Message);
             }
         }
 
-        public void OnChangeChat(ChatChangeModel model)
+        public override void OnChangeChat(ChatChangeModel model)
         {
             using (var db = new ServerDbContext())
             {
@@ -152,7 +130,7 @@ namespace ServerClasses
             }
         }
 
-        public void OnCreateChat(ChatCreationModel model)
+        public override void OnCreateChat(ChatCreationModel model)
         {
             using (var db = new ServerDbContext())
             {
@@ -189,10 +167,10 @@ namespace ServerClasses
                     .First(o => o.Id == chat.Id));
 
             }
-            Respondent.ResponseSuccess(RequestType.CreateChat, "You successfuly created a new chat");
+            Respondent.ResponseSuccess(BusType.CreateChat, "You successfuly created a new chat");
         }
 
-        public void OnDeleteChat(IdModel model)
+        public override void OnDeleteChat(IdModel model)
         {
             using (var db = new ServerDbContext())
             {
@@ -228,7 +206,7 @@ namespace ServerClasses
             }
         }
 
-        public void OnGetAllChats()
+        public override void OnGetAllChats()
         {
             using (var db = new ServerDbContext())
             {
@@ -242,7 +220,7 @@ namespace ServerClasses
             }
         }
 
-        public void OnGetPageOfMessages(GetMessagesInfoModel model)
+        public override void OnGetPageOfMessages(GetMessagesInfoModel model)
         {
             using (var db = new ServerDbContext())
             {
@@ -257,7 +235,7 @@ namespace ServerClasses
             }
         }
 
-        public void OnMarkReaded(IdModel model)
+        public override void OnMarkReaded(IdModel model)
         {
             using (var db = new ServerDbContext())
             {
@@ -270,7 +248,7 @@ namespace ServerClasses
             }
         }
 
-        public void OnReadUnreaded(IdModel model)
+        public override void OnReadUnreaded(IdModel model)
         {
             using (var db = new ServerDbContext())
             {
@@ -291,7 +269,7 @@ namespace ServerClasses
             }
         }
 
-        public void OnSearchUsers(SearchModel model)
+        public override void OnSearchUsers(SearchModel model)
         {
             var allusers = new List<User>();
             using (var db = new ServerDbContext())
@@ -339,7 +317,7 @@ namespace ServerClasses
             }
         }
 
-        public void OnSendMessage(MessageModel model)
+        public override void OnSendMessage(MessageModel model)
         {
             try
             {
@@ -350,29 +328,29 @@ namespace ServerClasses
                     db.Messages.Add(message);
                     db.SaveChanges();
 
-                    var list = new List<ServerDatabase.File>();
-                    foreach (var fileinfo in model.Files)
-                    {
-                        var file = new ServerDatabase.File() { Message = message, Name = fileinfo.Name, Size = fileinfo.DataSize, Format = fileinfo.Format };
-                        db.Files.Add(file);
-                        list.Add(file);
-                    }
-                    db.SaveChanges();
-                    for (int i = 0; i < list.Count; i++)
-                    {
-                        list[i].ServerPath =
-                            Network.ReadFile($"Files\\{list[i].Id}_{model.Files[i].Name}.{model.Files[i].Format}",
-                            model.Files[i]
-                        );
-                    }
-                    db.SaveChanges();
+                    //var list = new List<ServerDatabase.File>();
+                    //foreach (var fileinfo in model.Files)
+                    //{
+                    //    var file = new ServerDatabase.File() { Message = message, Name = fileinfo.Name, Size = fileinfo.DataSize, Format = fileinfo.Format };
+                    //    db.Files.Add(file);
+                    //    list.Add(file);
+                    //}
+                    //db.SaveChanges();
+                    //for (int i = 0; i < list.Count; i++)
+                    //{
+                    //    list[i].ServerPath =
+                    //        Network.ReadFile($"Files\\{list[i].Id}_{model.Files[i].Name}.{model.Files[i].Format}",
+                    //        model.Files[i]
+                    //    );
+                    //}
+                    //db.SaveChanges();
                     var chat = db.Chats.Include(c => c.Users).First(c => c.Id == model.ChatId);
                     Notifyer.MessageSended(message, chat);
                 }
             }
             catch (OperationFailureExeption)
             {
-                Respondent.ResponseFailure(RequestType.SendMessage, "Unable to send message from unregistered user");
+                Respondent.ResponseFailure(BusType.SendMessage, "Unable to send message from unregistered user");
             }
         }
     }

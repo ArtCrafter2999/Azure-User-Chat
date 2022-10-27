@@ -16,7 +16,6 @@ try
         TcpClient tcpclient = listener.AcceptTcpClient();
 
 
-
         consoleinput.OnConnected();
         var factory = new ClientFactory()
         {
@@ -24,7 +23,7 @@ try
             Listener = new RequestListener(),
             Respondent = new RequestResponse(),
             Handler = new RequestHandler(),
-            Client = new ServerClasses.ClientObject(tcpclient),
+            //Client = new ServerClaasses.ClientObject(tcpclient),
             Notifyer = new ClientsNotifyer()
         };
         factory.Respondent.OnSuccess += consoleinput.OnSuccess;
@@ -32,7 +31,7 @@ try
         factory.Client.OnDisconected += consoleinput.OnDisconected;
         consoleinput.Bind(factory.Listener);
         var Client = factory.MakeClient();
-        Client.Listener.BeginListen();
+        //Client.Listener.BeginListen();
 
 
         //Server.ClientObject clientObject = new Server.ClientObject(tcpclient);
