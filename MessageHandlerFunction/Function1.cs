@@ -13,35 +13,38 @@ using NetModelsLibrary.Models;
 using Microsoft.Extensions.Configuration;
 using ServerClasses;
 using System.Xml.Serialization;
+using System.Threading;
+
 
 namespace MessageHandlerFunction
 {
-    public static class Function1
+    public class Function1
     {
         [FunctionName("Function1")]
-        public static async Task<IActionResult> Run(
-            [ServiceBusTrigger(
-            "requests",
-            AutoCompleteMessages = false,
-            Connection = "ConnectionString",
-            IsSessionsEnabled = true)]
-        ServiceBusReceivedMessage message,
-        ILogger log)
+        public void Run([ServiceBusTrigger("requests", Connection = "ConnectionString")]string message, ILogger log)
         {
+            var type = Deserialize<RequestWrap>(message);
+            log.LogInformation("Received " + type.Type);
+
+
             ClientFactory factory = new ClientFactory();
             factory.Client = new ClientObject();
-            factory.Endpoint = new ReplyEndpoint(message.SessionId);
+            factory.Endpoint = new ServerEndpoint(type.ID);
             factory.Listener = new ServiceBusMessageListener();
             factory.Respondent = new RequestResponse();
             factory.Handler = new RequestHandler(factory.Listener);
             factory.Notifyer = new ClientsNotifyer();
             var client = factory.MakeClient();
 
-            BusTypeModel type = Deserialize<BusTypeModel>(message.Body.ToString());
-
-            log.LogInformation(type.Type.ToString() + " request");
-            (client.Listener as ServiceBusMessageListener).Invoke(message);
-            return new OkObjectResult(message);
+            (client.Listener as ServiceBusMessageListener).Invoke(type);
+            Thread.Sleep(10_000);
+            client.Listener = null;
+            client.Endpoint.TokenSource.Cancel();
+            client.Endpoint = null;
+            client.Handler = null;
+            client.Notifyer = null;
+            client.Respondent = null;
+            client = null;
         }
         private static T Deserialize<T>(string s)
         {

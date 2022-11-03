@@ -9,8 +9,8 @@ namespace ServerClasses
 {
     public class OperationFailureExeption : Exception
     {
-        public BusType? BusType { get; set; }
-        public OperationFailureExeption(BusType type, string message) : base(message) { BusType = type; }
+        public RequestType? BusType { get; set; }
+        public OperationFailureExeption(RequestType type, string message) : base(message) { BusType = type; }
         public OperationFailureExeption(string message) : base(message) { }
         public OperationFailureExeption() : base("не вдалося виконати цю операцію") { }
     }

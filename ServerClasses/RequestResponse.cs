@@ -18,8 +18,8 @@ namespace ServerClasses
         public RequestHandlerBase Handler { get => Client.Handler; set { Client.Handler = value; } }
         public ServerEndpoint Endpoint { get => Client.Endpoint; set { Client.Endpoint = value; } }
 
-        public event Action<BusType, string> OnSuccess;
-        public event Action<BusType, string> OnFailure;
+        public event Action<RequestType, string> OnSuccess;
+        public event Action<RequestType, string> OnFailure;
 
         public string GenerateChatName(Chat chat)
         {
@@ -46,7 +46,7 @@ namespace ServerClasses
             return string.Join(", ", names);
         }
 
-        public override void ResponseChats(IEnumerable<Chat> chats)
+        public async override Task ResponseChats(IEnumerable<Chat> chats)
         {
             AllChatsModel res = new AllChatsModel();
             res.User = new UserStatusModel()
@@ -95,21 +95,21 @@ namespace ServerClasses
                     Unreaded = chat.UserChatRelatives.Find(ucr => ucr.User.Id == Client.User.Id).Unreaded
                 }); ;
             }
-            Endpoint.Send(res);
+            await Endpoint.SendReply(res);
         }
 
-        public override void ResponseFailure(BusType type, string message)
+        public async override Task ResponseFailure(RequestType type, string message)
         {
             OnFailure?.Invoke(type, message);
-            Endpoint.Send(new ResoultModel(type, false, message));
+            await Endpoint.SendReply(new ResoultModel(type, false, message));
         }
-        public override void ResponseSuccess(BusType type, string message)
+        public async override Task ResponseSuccess(RequestType type, string message)
         {
             OnSuccess?.Invoke(type, message);
-            Endpoint.Send(new ResoultModel(type, true, message) {ToUserId = Client.User.Id});
+            await Endpoint.SendReply(new ResoultModel(type, true, message));
         }
 
-        public override void ResponseMessagePage(int from, IEnumerable<Message> messages)
+        public async override Task ResponseMessagePage(int from, IEnumerable<Message> messages)
         {
             var page = new MessagesPageModel()
             {
@@ -122,17 +122,22 @@ namespace ServerClasses
             {
                 page.Messages.Add(new MessageModel(message, Client.IsUserOnline(message.User.Id)));
             }
-            Endpoint.Send(page);
+            await Endpoint.SendReply(page);
         }
 
-        public override void ResponseUsers(IEnumerable<User> users)
+        public async override Task ResponseUsers(IEnumerable<User> users)
         {
             var res = new AllUsersModel();
             foreach (var user in users)
             {
                 res.Users.Add(new UserStatusModel(user, Client.IsUserOnline(user.Id)));
             }
-            Endpoint.Send(res);
+            await Endpoint.SendReply(res);
+        }
+
+        public async override Task ResponseId(int id)
+        {
+            await Endpoint.SendReply(new IdModel(id));
         }
     }
 }

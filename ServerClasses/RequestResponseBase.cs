@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ServerDatabase;
+using NetModelsLibrary.Models;
 
 namespace ServerClasses
 {
@@ -16,10 +17,11 @@ namespace ServerClasses
         public override ClientsNotifyerBase Notifyer { get => Client.Notifyer; set { Client.Notifyer = value; } }
         public override RequestHandlerBase Handler { get => Client.Handler; set { Client.Handler = value; } }
 
-        public abstract void ResponseSuccess(BusType type, string message);
-        public abstract void ResponseFailure(BusType type, string message);
-        public abstract void ResponseChats(IEnumerable<Chat> chats);
-        public abstract void ResponseUsers(IEnumerable<User> users);
-        public abstract void ResponseMessagePage(int from, IEnumerable<Message> messages);
+        public abstract Task ResponseSuccess(RequestType type, string message);
+        public abstract Task ResponseFailure(RequestType type, string message);
+        public abstract Task ResponseChats(IEnumerable<Chat> chats);
+        public abstract Task ResponseUsers(IEnumerable<User> users);
+        public abstract Task ResponseMessagePage(int from, IEnumerable<Message> messages);
+        public abstract Task ResponseId(int id);
     }
 }

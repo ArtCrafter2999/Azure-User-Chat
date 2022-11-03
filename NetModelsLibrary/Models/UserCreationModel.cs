@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace NetModelsLibrary.Models
 {
-    public class UserCreationModel : BusTypeModel
+    public class UserCreationModel 
     {
         public string Name { get; set; }
         public string PasswordMD5 { get; set; }

@@ -15,10 +15,10 @@ namespace MessageHandlerFunction
 {
     internal class ServiceBusMessageListener : RequestListenerBase
     {
-        public void Invoke(ServiceBusReceivedMessage message)
+        public void Invoke(RequestWrap wrap)
         {
-            Endpoint = new ReplyEndpoint(message.SessionId);
-            Invoke(message.Body.ToString());
+            if (wrap.Type != RequestType.Registration && wrap.Type != RequestType.Auth) Client.SetUser(int.Parse(wrap.ID));
+            Invoke(wrap.Type, wrap.RawObject);
         }
     }
 }

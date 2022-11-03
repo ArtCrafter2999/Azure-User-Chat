@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace NetModelsLibrary.Models
 {
-    public class SearchModel : BusTypeModel
+    public class SearchModel 
     {
         public string SearchString { get; set; }
     }

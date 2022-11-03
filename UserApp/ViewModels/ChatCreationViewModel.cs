@@ -37,8 +37,7 @@ namespace UserApp.ViewModels
             {
                 ChatCreationModel.Users.Add(new NetModelsLibrary.Models.IdModel(user.Id));
             }
-            ChatCreationModel.Type = BusType.CreateChat;
-            await Connection.Endpoint.SendRequest(ChatCreationModel);
+            await Connection.Endpoint.SendRequest(RequestType.CreateChat, ChatCreationModel);
             if ((await Connection.Endpoint.ReceiveReply<NetModelsLibrary.Models.ResoultModel>()).Success) ChatCreated?.Invoke();
 
             MainWindow.OverlayGrid.HideAll();
@@ -71,7 +70,7 @@ namespace UserApp.ViewModels
             AddUserView.OnPropertyChanged(nameof(AddUserView.SearchModel));
             TurnOffChangeMode();
         });
-        public ICommand Change => new RelayCommand(o =>
+        public ICommand Change => new RelayCommand(async o =>
         {
             ChatChangeModel.Users = new List<NetModelsLibrary.Models.IdModel>();
             ChatChangeModel.Title = ChatCreationModel.Title;
@@ -79,8 +78,7 @@ namespace UserApp.ViewModels
             {
                 ChatChangeModel.Users.Add(new NetModelsLibrary.Models.IdModel(user.Id));
             }
-            ChatChangeModel.Type = BusType.ChangeChat;
-            Connection.Endpoint.SendRequest(ChatChangeModel);
+            await Connection.Endpoint.SendRequest(RequestType.ChangeChat, ChatChangeModel);
 
             MainWindow.ChatController.SelectedChatModel = null;
             MainWindow.OverlayGrid.HideAll();
@@ -92,9 +90,9 @@ namespace UserApp.ViewModels
             AddUserView.OnPropertyChanged(nameof(AddUserView.SearchModel));
             TurnOffChangeMode();
         }, o => AddedUsers.Count > 0);
-        public ICommand Delete => new RelayCommand(o =>
+        public ICommand Delete => new RelayCommand(async o =>
         {
-            Connection.Endpoint.SendRequest(new NetModelsLibrary.Models.IdModel(ChatChangeModel.Id) { Type = BusType.DeleteChat });
+            await Connection.Endpoint.SendRequest(RequestType.DeleteChat, new NetModelsLibrary.Models.IdModel(ChatChangeModel.Id));
 
             MainWindow.ChatController.SelectedChatModel = null;
             MainWindow.OverlayGrid.HideAll();

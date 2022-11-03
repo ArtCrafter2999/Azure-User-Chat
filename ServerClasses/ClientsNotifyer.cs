@@ -57,8 +57,7 @@ namespace ServerClasses
                 if (Client.IsUserOnline(user.Id))
                 {
                     var net = Client.GetOnlineUserEndpoint(user.Id);
-                    reschat.Type = BusType.ChatCreated;
-                    net.Send(reschat);
+                    net.SendNotify(reschat, NotifyType.ChatCreated);
                 }
             }
             foreach (var user in removed)
@@ -66,7 +65,7 @@ namespace ServerClasses
                 if (Client.IsUserOnline(user.Id))
                 {
                     var net = Client.GetOnlineUserEndpoint(user.Id);
-                    net.Send(new IdModel(reschat.Id) { Type = BusType.ChatDeleted });
+                    net.SendNotify(new IdModel(reschat.Id), NotifyType.ChatDeleted);
                 }
             }
             foreach (var user in notChanged)
@@ -74,8 +73,7 @@ namespace ServerClasses
                 if (Client.IsUserOnline(user.Id))
                 {
                     var net = Client.GetOnlineUserEndpoint(user.Id);
-                    reschat.Type = BusType.ChatChanged;
-                    net.Send(reschat);
+                    net.SendNotify(reschat, NotifyType.ChatChanged);
                 }
             }
         }
@@ -129,9 +127,8 @@ namespace ServerClasses
                 if (user.Id != Client.User.Id && Client.IsUserOnline(user.Id))
                 {
                     var userEndpoint = Client.GetOnlineUserEndpoint(user.Id);
-                    chat.Type = BusType.ChatCreated;
                     chat.Title = model.Title ?? GenerateChatName(chat, user);
-                    userEndpoint.Send(chat);
+                    userEndpoint.SendNotify(chat, NotifyType.ChatCreated);
                 }
             }
 
@@ -144,7 +141,7 @@ namespace ServerClasses
                 if (Client.IsUserOnline(user.Id))
                 {
                     var net = Client.GetOnlineUserEndpoint(user.Id);
-                    net.Send(new IdModel(ChatId) { Type = BusType.ChatDeleted });
+                    net.SendNotify(new IdModel(ChatId), NotifyType.ChatDeleted);
                 }
             }
         }
@@ -160,14 +157,12 @@ namespace ServerClasses
                     if (Client.IsUserOnline(user.Id))
                     {
                         var userEndpoint = Client.GetOnlineUserEndpoint(user.Id);
-                        model.Type = BusType.MessageSended;
-                        userEndpoint.Send(model);
+                        userEndpoint.SendNotify(model, NotifyType.MessageSended);
                     }
                 }
                 else
                 {
-                    model.Type = BusType.MessageSended;
-                    Endpoint.Send(model);
+                    Endpoint.SendNotify(model, NotifyType.MessageSended);
                 }
             }
         }
@@ -202,7 +197,7 @@ namespace ServerClasses
                 if (Client.IsUserOnline(user.Id))
                 {
                     var net = Client.GetOnlineUserEndpoint(user.Id);
-                    net.Send(new UserStatusModel(Client.User, Client.IsUserOnline(Client.User.Id)) { Type = BusType.UserChangeStatus });
+                    net.SendNotify(new UserStatusModel(Client.User, Client.IsUserOnline(Client.User.Id)),NotifyType.UserChangeStatus);
                 }
             }
         }

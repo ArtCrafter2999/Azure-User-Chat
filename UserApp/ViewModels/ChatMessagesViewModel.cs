@@ -146,7 +146,7 @@ namespace UserApp.ViewModels
         {
             if (selectedChat?.Messages != null && Controller.SelectedChatModel.Messages.Count == 0)
             {
-                await Connection.Endpoint.SendRequest(new NetModelsLibrary.Models.IdModel(selectedChat.Id) { Type = BusType.ReadUnreaded });
+                await Connection.Endpoint.SendRequest(RequestType.ReadUnreaded, new NetModelsLibrary.Models.IdModel(selectedChat.Id));
                 var page = await Connection.Endpoint.ReceiveReply<NetModelsLibrary.Models.MessagesPageModel>();
                 if (selectedChat.ChatView != null) selectedChat.ChatView.Unreaded = 0;
 
@@ -162,7 +162,7 @@ namespace UserApp.ViewModels
             }
             else
             {
-                await Connection.Endpoint.SendRequest(new NetModelsLibrary.Models.IdModel(selectedChat.Id) { Type = BusType.MarkReaded });
+                await Connection.Endpoint.SendRequest(RequestType.MarkReaded, new NetModelsLibrary.Models.IdModel(selectedChat.Id));
                 if (selectedChat.ChatView != null) selectedChat.ChatView.Unreaded = 0;
                 MessagesDownWithHalfScroll(selectedChat.Messages);
             }

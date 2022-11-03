@@ -14,7 +14,7 @@ namespace ServerClasses
     {
         public RequestHandler(RequestListenerBase listenerBase) : base(listenerBase) {}
 
-        public override void OnRegistration(UserCreationModel model)
+        public async override Task OnRegistration(UserCreationModel model)
         {
             try
             {
@@ -39,15 +39,15 @@ namespace ServerClasses
                         throw new OperationFailureExeption($"Login '{model.Login}' is alrady exist, request rejected");
                     }
                 }
-                Respondent.ResponseSuccess(BusType.Registration, "You registered successfuly");
+                await Respondent.ResponseSuccess(RequestType.Registration, "You registered successfuly");
                 Client.UserOnline();
             }
             catch (OperationFailureExeption ex)
             {
-                Respondent.ResponseFailure(BusType.Registration, ex.Message);
+                await Respondent.ResponseFailure(RequestType.Registration, ex.Message);
             }
         }
-        public override void OnAuth(AuthModel model)
+        public async override Task OnAuth(AuthModel model)
         {
             try
             {
@@ -64,16 +64,16 @@ namespace ServerClasses
                         throw new OperationFailureExeption($"Incorrect login or password (а конкретно {(user == null ? "логін" : "пароль")})");
                     }
                 }
-                Respondent.ResponseSuccess(BusType.Auth, "You authorized successfuly");
+                await Respondent.ResponseSuccess(RequestType.Auth, "You authorized successfuly");
                 Client.UserOnline();
             }
             catch (OperationFailureExeption ex)
             {
-                Respondent.ResponseFailure(BusType.Auth, ex.Message);
+                await Respondent.ResponseFailure(RequestType.Auth, ex.Message);
             }
         }
 
-        public override void OnChangeChat(ChatChangeModel model)
+        public async override Task OnChangeChat(ChatChangeModel model)
         {
             using (var db = new ServerDbContext())
             {
@@ -130,7 +130,7 @@ namespace ServerClasses
             }
         }
 
-        public override void OnCreateChat(ChatCreationModel model)
+        public async override Task OnCreateChat(ChatCreationModel model)
         {
             using (var db = new ServerDbContext())
             {
@@ -167,10 +167,10 @@ namespace ServerClasses
                     .First(o => o.Id == chat.Id));
 
             }
-            Respondent.ResponseSuccess(BusType.CreateChat, "You successfuly created a new chat");
+            await Respondent.ResponseSuccess(RequestType.CreateChat, "You successfuly created a new chat");
         }
 
-        public override void OnDeleteChat(IdModel model)
+        public async override Task OnDeleteChat(IdModel model)
         {
             using (var db = new ServerDbContext())
             {
@@ -206,7 +206,7 @@ namespace ServerClasses
             }
         }
 
-        public override void OnGetAllChats()
+        public async override Task OnGetAllChats()
         {
             using (var db = new ServerDbContext())
             {
@@ -216,11 +216,11 @@ namespace ServerClasses
                             .Include(c => c.UserChatRelatives)
                             where c.Users.Contains(Client.User)
                             select c;
-                Respondent.ResponseChats(chats);
+                await Respondent.ResponseChats(chats);
             }
         }
 
-        public override void OnGetPageOfMessages(GetMessagesInfoModel model)
+        public async override Task OnGetPageOfMessages(GetMessagesInfoModel model)
         {
             using (var db = new ServerDbContext())
             {
@@ -231,11 +231,11 @@ namespace ServerClasses
                     .OrderByDescending(m => m.SendTime)
                     .Skip(model.From)
                     .Take(ClientObject.PageSize);
-                Respondent.ResponseMessagePage(model.From, messages);
+                await Respondent.ResponseMessagePage(model.From, messages);
             }
         }
 
-        public override void OnMarkReaded(IdModel model)
+        public async override Task OnMarkReaded(IdModel model)
         {
             using (var db = new ServerDbContext())
             {
@@ -248,7 +248,7 @@ namespace ServerClasses
             }
         }
 
-        public override void OnReadUnreaded(IdModel model)
+        public async override Task OnReadUnreaded(IdModel model)
         {
             using (var db = new ServerDbContext())
             {
@@ -265,11 +265,11 @@ namespace ServerClasses
                 rel.Unreaded = 0;
                 db.SaveChanges();
 
-                Respondent.ResponseMessagePage(0, messages);
+                await Respondent.ResponseMessagePage(0, messages);
             }
         }
 
-        public override void OnSearchUsers(SearchModel model)
+        public async override Task OnSearchUsers(SearchModel model)
         {
             var allusers = new List<User>();
             using (var db = new ServerDbContext())
@@ -313,11 +313,11 @@ namespace ServerClasses
                 Client.User = db.Users.Find(Client.User.Id);
                 allusers.Remove(Client.User);
 
-                Respondent.ResponseUsers(allusers);
+                await Respondent.ResponseUsers(allusers);
             }
         }
 
-        public override void OnSendMessage(MessageModel model)
+        public async override Task OnSendMessage(MessageModel model)
         {
             try
             {
@@ -350,7 +350,7 @@ namespace ServerClasses
             }
             catch (OperationFailureExeption)
             {
-                Respondent.ResponseFailure(BusType.SendMessage, "Unable to send message from unregistered user");
+                await Respondent.ResponseFailure(RequestType.SendMessage, "Unable to send message from unregistered user");
             }
         }
     }

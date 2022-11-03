@@ -32,4 +32,3 @@ D:\Projects\Azure-User-Chat\ServerClasses\bin\Debug\net6.0\NetModelsLibrary.pdb
 D:\Projects\Azure-User-Chat\ServerClasses\bin\Debug\net6.0\ServerDatabase.pdb
 D:\Projects\Azure-User-Chat\ServerClasses\obj\Debug\net6.0\ServerClasses.csproj.CopyComplete
 D:\Projects\Azure-User-Chat\ServerClasses\obj\Debug\net6.0\ref\ServerClasses.dll
-D:\Projects\Azure-User-Chat\ServerClasses\bin\Debug\net6.0\appsettings.json

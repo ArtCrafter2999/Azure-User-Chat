@@ -67,7 +67,7 @@ namespace ServerClasses
 
         public override ServerEndpoint GetOnlineUserEndpoint(int userId)
         {
-            return new NotifyEndpoint(userId);
+            return new ServerEndpoint(userId.ToString());
         }
 
         public override bool IsUserOnline(int userId)

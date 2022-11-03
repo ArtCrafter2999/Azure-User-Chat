@@ -6,12 +6,12 @@ using System.Threading.Tasks;
 
 namespace NetModelsLibrary
 {
-    public enum BusType
+    public enum RequestType
     {
         /// <summary>
         /// Registration request which contain login username and password in MD5
         /// After this server expects that sequence of requests:
-        /// Expects UserCreationModel returns ResoultModel
+        /// Expects UserCreationModel returns IdModel with id of the user (-1 if incorrect)
         /// </summary>
         Registration,
         /// <summary>
@@ -22,7 +22,7 @@ namespace NetModelsLibrary
         /// <summary>
         /// Authorization request which contain login and password in MD5
         /// After this server expects that sequence of requests:
-        /// Expects AuthModel returns ResoultModel
+        /// Expects AuthModel returns IdModel with id of the user (-1 if incorrect)
         /// </summary>
         Auth,
         /// <summary>
@@ -72,36 +72,5 @@ namespace NetModelsLibrary
         /// Expects IdModel witch is chat id. Returns nothing  
         /// </summary>
         DeleteChat,
-
-
-
-
-        /// <summary>
-        /// Notify about chat with the user has been created.
-        /// Send the created ChatModel
-        /// </summary>
-        ChatCreated,
-        /// <summary>
-        /// Notify that someone has sent a message to one of the chats
-        /// Send the sended MessageModel
-        /// </summary>
-        MessageSended,
-        /// <summary>
-        /// Notify that user chatget his status (online or offline)
-        /// Send the sended UserStatusModel
-        /// </summary>
-        UserChangeStatus,
-        /// <summary>
-        /// Notify about chat with the user has been changed.
-        /// Notify sender too
-        /// Send the changed ChatModel
-        /// </summary>
-        ChatChanged,
-        /// <summary>
-        /// Notify about chat with the user has been deleted or user has been removed from the chat.
-        /// Notify sender too
-        /// Send the IdModel of deleted chat
-        /// </summary>
-        ChatDeleted,
     }
 }

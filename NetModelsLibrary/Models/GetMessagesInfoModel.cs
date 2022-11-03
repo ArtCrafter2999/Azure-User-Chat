@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace NetModelsLibrary.Models
 {
-    public class GetMessagesInfoModel : BusTypeModel
+    public class GetMessagesInfoModel 
     {
         public int ChatId { get; set; }
         //public int PageMessagesCount { get; set; }

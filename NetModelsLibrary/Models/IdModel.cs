@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace NetModelsLibrary.Models
 {
-    public class IdModel : BusTypeModel
+    public class IdModel 
     {
         public int Id { get; set; }
         public IdModel(int id)

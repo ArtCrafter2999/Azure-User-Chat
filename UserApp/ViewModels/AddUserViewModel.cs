@@ -98,8 +98,7 @@ namespace UserApp.ViewModels
             if (SearchModel.SearchString != _pastResult)
             {
                 _pastResult = SearchModel.SearchString;
-                SearchModel.Type = BusType.SearchUsers;
-                await Connection.Endpoint.SendRequest(SearchModel);
+                await Connection.Endpoint.SendRequest(RequestType.SearchUsers, SearchModel);
                 var allusers = await Connection.Endpoint.ReceiveReply<NetModelsLibrary.Models.AllUsersModel>();
                 Users.Clear();
                 foreach (var user in allusers.Users)

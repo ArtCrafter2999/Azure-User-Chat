@@ -104,12 +104,12 @@ namespace UserApp.Controllers
         }
         public void MessageSended(MessageModel model)
         {
-            MainWindow.Dispatcher.Invoke(() =>
+            MainWindow.Dispatcher.Invoke(async () =>
             {
                 if (MainWindow.ChatView.IsSelected &&
                     model.ChatId == ChatController.SelectedChatModel.Id)
                 {
-                    Connection.Endpoint.SendRequest(new IdModel(model.ChatId) { Type = BusType.MarkReaded });
+                    await Connection.Endpoint.SendRequest(RequestType.MarkReaded, new IdModel(model.ChatId));
                     var message = new Models.MessageModel(model);
                     MainWindow.ChatView.MessageDown(message);
                     ChatController.SelectedChatModel.LastMessage = message;

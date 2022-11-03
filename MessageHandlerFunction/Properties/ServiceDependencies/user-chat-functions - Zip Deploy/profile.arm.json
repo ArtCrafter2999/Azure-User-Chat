@@ -21,7 +21,7 @@
     },
     "resourceName": {
       "type": "string",
-      "defaultValue": "MessageFunction20221024205910",
+      "defaultValue": "user-chat-functions",
       "metadata": {
         "description": "Name of the main resource to be created by this template."
       }

@@ -31,8 +31,9 @@ namespace UserApp.ViewModels
                 IConfigurationRoot configuration = builder.Build();
                 Connection.EndpointCancelation = new CancellationTokenSource();
                 Connection.Endpoint = new ClientEndpoint()
-                {Token = Connection.EndpointCancelation.Token };
-                Connection.IsConnected = true;
+                { Token = Connection.EndpointCancelation.Token };
+                Connection.IsConnected = false;
+                Success += o => Connection.IsConnected = true;
             }
             catch (Exception)
             {
@@ -42,36 +43,25 @@ namespace UserApp.ViewModels
         public ICommand Authorize => new RelayCommand(async o =>
         {
             Connect();
-            if (Connection.IsConnected)
+            try
             {
-                Connection.Endpoint.SendRequest(new AuthModel() { Type = BusType.Auth, Login = Login, PasswordMD5 = CreateMD5(((PasswordBox)o).Password) });
-                Invoke(await Connection.Endpoint.ReceiveReply<ResoultModel>());
+                Invoke(await Connection.Endpoint.Authorize(Login, ((PasswordBox)o).Password));
             }
-            else
+            catch (Exception ex)
             {
-                Invoke(new ResoultModel(false, "Немає з'єднання з сервером"));
+                Invoke(new ResoultModel(false, ex.Message));
             }
         }, o => o != null && Login != null);
         public ICommand Register => new RelayCommand(async o =>
         {
             Connect();
-            if (Connection.IsConnected)
+            try
             {
-                Connection.Endpoint.SendRequest(new UserCreationModel() { Type = BusType.Registration, Name = Username, Login = Login, PasswordMD5 = CreateMD5(((PasswordBox)o).Password) });
-                try
-                {
-                    ResoultModel? resoult = await Connection.Endpoint.ReceiveReply<ResoultModel>();
-                    Invoke(resoult);
-                }
-                catch (Exception ex)
-                {
-                    Invoke(new ResoultModel(false, ex.Message));
-                    throw;
-                }
+                Invoke(await Connection.Endpoint.Register(Login, ((PasswordBox)o).Password, Username));
             }
-            else
+            catch (Exception ex)
             {
-                Invoke(new ResoultModel(false, "Немає з'єднання з сервером"));
+                Invoke(new ResoultModel(false, ex.Message));
             }
         }, o => o != null && Login != null && Username != null);
 

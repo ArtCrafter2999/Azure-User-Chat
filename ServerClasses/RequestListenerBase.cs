@@ -30,62 +30,45 @@ namespace ServerClasses
         public event Action<ChatChangeModel> OnChangeChat;
         public event Action<IdModel> OnDeleteChat;
 
-        public void Invoke(string raw)
+        public void Invoke(RequestType type, string raw)
         {
-            if (raw == null || raw == "") throw new Exception("received null");
-
-            BusTypeModel infoModel = Deserialize<BusTypeModel>(raw);
-
-            if (infoModel == null) throw new Exception("received null");
-            if (infoModel.FromUserId.HasValue) Client.SetUser(infoModel.FromUserId.Value);
-
-            switch (infoModel.Type)
+            switch (type)
             {
-                case BusType.Registration:
-                    OnRegistration?.Invoke(Deserialize<UserCreationModel>(raw));
+                case RequestType.Registration:
+                    OnRegistration?.Invoke(BusSerializer.Deserialize<UserCreationModel>(raw));
                     break;
-                case BusType.SendMessage:
-                    OnSendMessage?.Invoke(Deserialize<MessageModel>(raw));
+                case RequestType.SendMessage:
+                    OnSendMessage?.Invoke(BusSerializer.Deserialize<MessageModel>(raw));
                     break;
-                case BusType.Auth:
-                    OnAuth?.Invoke(Deserialize<AuthModel>(raw));
+                case RequestType.Auth:
+                    OnAuth?.Invoke(BusSerializer.Deserialize<AuthModel>(raw));
                     break;
-                case BusType.GetAllChats:
+                case RequestType.GetAllChats:
                     OnGetAllChats?.Invoke();
                     break;
-                case BusType.CreateChat:
-                    OnCreateChat?.Invoke(Deserialize<ChatCreationModel>(raw));
+                case RequestType.CreateChat:
+                    OnCreateChat?.Invoke(BusSerializer.Deserialize<ChatCreationModel>(raw));
                     break;
-                case BusType.SearchUsers:
-                    OnSearchUsers?.Invoke(Deserialize<SearchModel>(raw));
+                case RequestType.SearchUsers:
+                    OnSearchUsers?.Invoke(BusSerializer.Deserialize<SearchModel>(raw));
                     break;
-                case BusType.GetPageOfMessages:
-                    OnGetPageOfMessages?.Invoke(Deserialize<GetMessagesInfoModel>(raw));
+                case RequestType.GetPageOfMessages:
+                    OnGetPageOfMessages?.Invoke(BusSerializer.Deserialize<GetMessagesInfoModel>(raw));
                     break;
-                case BusType.ReadUnreaded:
-                    OnReadUnreaded?.Invoke(Deserialize<IdModel>(raw));
+                case RequestType.ReadUnreaded:
+                    OnReadUnreaded?.Invoke(BusSerializer.Deserialize<IdModel>(raw));
                     break;
-                case BusType.MarkReaded:
-                    OnMarkReaded?.Invoke(Deserialize<IdModel>(raw));
+                case RequestType.MarkReaded:
+                    OnMarkReaded?.Invoke(BusSerializer.Deserialize<IdModel>(raw));
                     break;
-                case BusType.ChangeChat:
-                    OnChangeChat?.Invoke(Deserialize<ChatChangeModel>(raw));
+                case RequestType.ChangeChat:
+                    OnChangeChat?.Invoke(BusSerializer.Deserialize<ChatChangeModel>(raw));
                     break;
-                case BusType.DeleteChat:
-                    OnDeleteChat?.Invoke(Deserialize<IdModel>(raw));
+                case RequestType.DeleteChat:
+                    OnDeleteChat?.Invoke(BusSerializer.Deserialize<IdModel>(raw));
                     break;
                 default:
                     break;
-            }
-        }
-        private T Deserialize<T>(string s)
-        {
-            XmlSerializer serializer = new(typeof(T));
-            using (TextReader tr = new StringReader(s))
-            {
-                T? res = (T?)serializer.Deserialize(tr);
-                if (res == null) throw new Exception("Deserialization returned null");
-                return res;
             }
         }
     }

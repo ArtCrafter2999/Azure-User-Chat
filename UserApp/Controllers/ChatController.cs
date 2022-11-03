@@ -44,7 +44,7 @@ namespace UserApp.Controllers
 
         public async void LoadChatsAsync()
         {
-            Connection.Endpoint.SendRequest(new NetModelsLibrary.BusTypeModel(BusType.GetAllChats));
+            await Connection.Endpoint.SendObject(new RequestWrap(RequestType.GetAllChats, Connection.Endpoint.sessionId));
             var allchats = await Connection.Endpoint.ReceiveReply<NetModelsLibrary.Models.AllChatsModel>();
             SelfUser = new UserModel(allchats.User);
             ChatModels.Clear();
@@ -57,11 +57,10 @@ namespace UserApp.Controllers
         {
             if (!SelectedChatModel.IsEnd)
             {
-                await Connection.Endpoint.SendRequest(new NetModelsLibrary.Models.GetMessagesInfoModel()
+                await Connection.Endpoint.SendRequest(RequestType.GetPageOfMessages, new NetModelsLibrary.Models.GetMessagesInfoModel()
                 {
                     ChatId = SelectedChatModel.Id,
                     From = From,
-                    Type = BusType.GetPageOfMessages
                 });
                 return Connection.Endpoint.ReceiveReply<NetModelsLibrary.Models.MessagesPageModel>().Result;
             }
@@ -69,8 +68,7 @@ namespace UserApp.Controllers
         }
         public async void SendMessageAsync(NetModelsLibrary.Models.MessageModel message)
         {
-            message.Type = BusType.SendMessage;
-            await Connection.Endpoint.SendRequest(message);
+            await Connection.Endpoint.SendRequest(RequestType.SendMessage, message);
             //MessageSended.Invoke(
             //    new MessageModel(
             //        Connection.Endpoint.ReceiveReply
