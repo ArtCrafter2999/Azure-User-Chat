@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using NetModelsLibrary;
 using NetModelsLibrary.Models;
 using ServerDatabase;
@@ -16,6 +17,7 @@ namespace ServerClasses
 
         public async override Task OnRegistration(UserCreationModel model)
         {
+            Logger?.LogInformation("Handler OnRegistration");
             try
             {
                 using (var db = new ServerDbContext())
@@ -32,49 +34,68 @@ namespace ServerClasses
                         };
                         db.Users.Add(newuser);
                         db.SaveChanges();
+                        Logger?.LogInformation("Handler OnRegistration: successfuly added new user");
                         Client.User = newuser;
                     }
                     else
                     {
-                        throw new OperationFailureExeption($"Login '{model.Login}' is alrady exist, request rejected");
+                        throw new OperationFailureException($"Login '{model.Login}' is alrady exist, request rejected");
                     }
                 }
-                await Respondent.ResponseSuccess(RequestType.Registration, "You registered successfuly");
+                await Respondent.ResponseId(Client.User.Id);
                 Client.UserOnline();
             }
-            catch (OperationFailureExeption ex)
+            catch (OperationFailureException ex)
             {
-                await Respondent.ResponseFailure(RequestType.Registration, ex.Message);
+                Logger?.LogError("Handler OnRegistration OperationFailureException: {0}         StackTrace: {1}", ex.Message, ex.StackTrace);
+                await Respondent.ResponseId(-1);
+            }
+            catch (Exception ex)
+            {
+                Logger?.LogError("Handler OnRegistration Exception: {0}         StackTrace: {1}", ex.Message, ex.StackTrace);
+                await Respondent.ResponseId(-1);
             }
         }
         public async override Task OnAuth(AuthModel model)
         {
+            Logger?.LogInformation("Handler OnAuth");
             try
             {
                 using (var db = new ServerDbContext())
                 {
+                    Logger?.LogInformation("Handler OnAuth Db Connected");
                     var user = db.Users.Count() > 0 ? db.Users.Where((u) => u.Login == model.Login).FirstOrDefault() : null;
                     if (user != null && user.PasswordMD5 == model.PasswordMD5)
                     {
+                        Logger?.LogInformation("Handler OnAuth User founded");
                         Client.User = user;
-
                     }
                     else
                     {
-                        throw new OperationFailureExeption($"Incorrect login or password (а конкретно {(user == null ? "логін" : "пароль")})");
+                        throw new OperationFailureException($"Incorrect login or password (а конкретно {(user == null ? "логін" : "пароль")})");
                     }
                 }
-                await Respondent.ResponseSuccess(RequestType.Auth, "You authorized successfuly");
+                Logger?.LogInformation("Handler OnAuth Response id: {0}", Client.User.Id);
+                await Respondent.ResponseId(Client.User.Id);
+                Logger?.LogInformation("Handler OnAuth UserOnline()");
                 Client.UserOnline();
             }
-            catch (OperationFailureExeption ex)
+            catch (OperationFailureException ex)
             {
-                await Respondent.ResponseFailure(RequestType.Auth, ex.Message);
+                Logger?.LogError("Handler OnAuth OperationFailureException: " + ex.Message);
+                await Respondent.ResponseId(-1);
+            }
+            catch (Exception ex)
+            {
+                Logger?.LogError("Handler OnAuth Exception: " + ex.Message);
+                await Respondent.ResponseId(-1);
             }
         }
 
         public async override Task OnChangeChat(ChatChangeModel model)
         {
+            Logger?.LogInformation("Handler OnChangeChat");
+
             using (var db = new ServerDbContext())
             {
                 var chat = db.Chats
@@ -125,13 +146,15 @@ namespace ServerClasses
                         }
                     }
                     db.SaveChanges();
-                    Notifyer.ChatChanged(chat, addedUsers, removedUsers, notChangedUsers);
+                    await Notifyer.ChatChanged(chat, addedUsers, removedUsers, notChangedUsers);
                 }
             }
         }
 
         public async override Task OnCreateChat(ChatCreationModel model)
         {
+            Logger?.LogInformation("Handler OnCreateChat");
+
             using (var db = new ServerDbContext())
             {
                 var chat = new Chat();
@@ -162,7 +185,7 @@ namespace ServerClasses
                 }
                 db.SaveChanges();
 
-                Notifyer.ChatCreated(db.Chats
+                await Notifyer.ChatCreated(db.Chats
                     .Include(o => o.Users)
                     .First(o => o.Id == chat.Id));
 
@@ -172,6 +195,8 @@ namespace ServerClasses
 
         public async override Task OnDeleteChat(IdModel model)
         {
+            Logger?.LogInformation("Handler OnDeleteChat");
+
             using (var db = new ServerDbContext())
             {
                 var chat = db.Chats
@@ -201,27 +226,39 @@ namespace ServerClasses
                     }
                     db.Chats.Remove(chat);
                     db.SaveChanges();
-                    Notifyer.ChatDeleted(model.Id, users);
+                    await Notifyer.ChatDeleted(model.Id, users);
                 }
             }
         }
 
         public async override Task OnGetAllChats()
         {
-            using (var db = new ServerDbContext())
+            Logger?.LogInformation("Handler OnGetAllChats");
+            try
             {
-                var chats = from Chat c in db.Chats
-                            .Include(c => c.Users)
-                            .Include(c => c.Messages)
-                            .Include(c => c.UserChatRelatives)
-                            where c.Users.Contains(Client.User)
-                            select c;
-                await Respondent.ResponseChats(chats);
+                using (var db = new ServerDbContext())
+                {
+                    var chats = from Chat c in db.Chats
+                                .Include(c => c.Users)
+                                .Include(c => c.Messages)
+                                .Include(c => c.UserChatRelatives)
+                                where c.Users.Contains(Client.User)
+                                select c;
+                    Logger?.LogInformation("Handler OnGetAllChats: count of chats: {0}", chats.Count());
+                    await Respondent.ResponseChats(chats);
+                }
             }
+            catch (Exception ex)
+            {
+                Logger?.LogError("Handler OnGetAllChats Exception: {0}         StackTrace: {1}", ex.Message, ex.StackTrace);
+            }
+            
         }
 
         public async override Task OnGetPageOfMessages(GetMessagesInfoModel model)
         {
+            Logger?.LogInformation("Handler OnGetPageOfMessages");
+
             using (var db = new ServerDbContext())
             {
                 var messages = db.Messages
@@ -237,6 +274,8 @@ namespace ServerClasses
 
         public async override Task OnMarkReaded(IdModel model)
         {
+            Logger?.LogInformation("Handler OnMarkReaded");
+
             using (var db = new ServerDbContext())
             {
                 var rel = db.Chats
@@ -250,6 +289,8 @@ namespace ServerClasses
 
         public async override Task OnReadUnreaded(IdModel model)
         {
+            Logger?.LogInformation("Handler OnReadUnreaded");
+
             using (var db = new ServerDbContext())
             {
                 var rel = db.Chats
@@ -271,6 +312,8 @@ namespace ServerClasses
 
         public async override Task OnSearchUsers(SearchModel model)
         {
+            Logger?.LogInformation("Handler OnSearchUsers");
+
             var allusers = new List<User>();
             using (var db = new ServerDbContext())
             {
@@ -310,7 +353,6 @@ namespace ServerClasses
                                       select u;
                 allusers.AddRange(SimilarUsername);
 
-                Client.User = db.Users.Find(Client.User.Id);
                 allusers.Remove(Client.User);
 
                 await Respondent.ResponseUsers(allusers);
@@ -319,11 +361,13 @@ namespace ServerClasses
 
         public async override Task OnSendMessage(MessageModel model)
         {
+            Logger?.LogInformation("Handler OnSendMessage");
+
             try
             {
                 using (var db = new ServerDbContext())
                 {
-                    if (Client.User.Id == -1) throw new OperationFailureExeption();
+                    if (Client.User.Id == -1) throw new OperationFailureException();
                     var message = new Message() { Text = model.Text, UserId = Client.User.Id, ChatId = model.ChatId, SendTime = model.SendTime };
                     db.Messages.Add(message);
                     db.SaveChanges();
@@ -345,13 +389,18 @@ namespace ServerClasses
                     //}
                     //db.SaveChanges();
                     var chat = db.Chats.Include(c => c.Users).First(c => c.Id == model.ChatId);
-                    Notifyer.MessageSended(message, chat);
+                    await Notifyer.MessageSended(message, chat);
                 }
             }
-            catch (OperationFailureExeption)
+            catch (OperationFailureException)
             {
                 await Respondent.ResponseFailure(RequestType.SendMessage, "Unable to send message from unregistered user");
             }
+        }
+
+        public override async Task OnLogOut()
+        {
+            await Task.Run(() => Client.UserOffline());
         }
     }
 }

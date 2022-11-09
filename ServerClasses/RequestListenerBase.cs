@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
+using Microsoft.Extensions.Logging;
 using NetModelsLibrary;
 using NetModelsLibrary.Models;
 using ServerDatabase;
@@ -12,11 +13,6 @@ namespace ServerClasses
 {
     public abstract class RequestListenerBase : ClientModelBase
     {
-        public override ServerEndpoint Endpoint { get => Client.Endpoint; set { Client.Endpoint = value; } }
-        public override RequestResponseBase Respondent { get => Client.Respondent; set { Client.Respondent = value; } }
-        public override RequestListenerBase Listener { get => Client.Listener; set { Client.Listener = value; } }
-        public override ClientsNotifyerBase Notifyer { get => Client.Notifyer; set { Client.Notifyer = value; } }
-        public override RequestHandlerBase Handler { get => Client.Handler; set { Client.Handler = value; } }
 
         public event Action<UserCreationModel> OnRegistration;
         public event Action<MessageModel> OnSendMessage;
@@ -29,9 +25,11 @@ namespace ServerClasses
         public event Action<IdModel> OnMarkReaded;
         public event Action<ChatChangeModel> OnChangeChat;
         public event Action<IdModel> OnDeleteChat;
+        public event Action OnLogOut;
 
         public void Invoke(RequestType type, string raw)
         {
+            Logger?.LogInformation("Listener received request {0},\nraw: {1}", type, raw);
             switch (type)
             {
                 case RequestType.Registration:

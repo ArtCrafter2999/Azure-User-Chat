@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using NetModelsLibrary;
 using NetModelsLibrary.Models;
 using ServerDatabase;
@@ -12,8 +13,9 @@ namespace ServerClasses
 {
     public class ClientsNotifyer : ClientsNotifyerBase
     {
-        public override void ChatChanged(Chat model, List<User> added, List<User> removed, List<User> notChanged)
+        public override async Task ChatChanged(Chat model, List<User> added, List<User> removed, List<User> notChanged)
         {
+            Logger?.LogInformation("Notifyer ChatChanged");
             MessageModel? messageModel = null;
             try
             {
@@ -57,7 +59,7 @@ namespace ServerClasses
                 if (Client.IsUserOnline(user.Id))
                 {
                     var net = Client.GetOnlineUserEndpoint(user.Id);
-                    net.SendNotify(reschat, NotifyType.ChatCreated);
+                    await net.SendNotify(reschat, NotifyType.ChatCreated);
                 }
             }
             foreach (var user in removed)
@@ -65,7 +67,7 @@ namespace ServerClasses
                 if (Client.IsUserOnline(user.Id))
                 {
                     var net = Client.GetOnlineUserEndpoint(user.Id);
-                    net.SendNotify(new IdModel(reschat.Id), NotifyType.ChatDeleted);
+                    await net.SendNotify(new IdModel(reschat.Id), NotifyType.ChatDeleted);
                 }
             }
             foreach (var user in notChanged)
@@ -73,7 +75,7 @@ namespace ServerClasses
                 if (Client.IsUserOnline(user.Id))
                 {
                     var net = Client.GetOnlineUserEndpoint(user.Id);
-                    net.SendNotify(reschat, NotifyType.ChatChanged);
+                    await net.SendNotify(reschat, NotifyType.ChatChanged);
                 }
             }
         }
@@ -102,7 +104,7 @@ namespace ServerClasses
             return string.Join(", ", names);
         }
 
-        public override void ChatCreated(Chat model)
+        public override async Task ChatCreated(Chat model)
         {
             var userStatusModels = new List<UserStatusModel>();
             foreach (var user in model.Users)
@@ -128,26 +130,30 @@ namespace ServerClasses
                 {
                     var userEndpoint = Client.GetOnlineUserEndpoint(user.Id);
                     chat.Title = model.Title ?? GenerateChatName(chat, user);
-                    userEndpoint.SendNotify(chat, NotifyType.ChatCreated);
+                    await userEndpoint.SendNotify(chat, NotifyType.ChatCreated);
                 }
             }
 
         }
 
-        public override void ChatDeleted(int ChatId, List<User> users)
+        public override async Task ChatDeleted(int ChatId, List<User> users)
         {
+            Logger?.LogInformation("Notifyer ChatDeleted");
+
             foreach (var user in users)
             {
                 if (Client.IsUserOnline(user.Id))
                 {
                     var net = Client.GetOnlineUserEndpoint(user.Id);
-                    net.SendNotify(new IdModel(ChatId), NotifyType.ChatDeleted);
+                    await net.SendNotify(new IdModel(ChatId), NotifyType.ChatDeleted);
                 }
             }
         }
 
-        public override void MessageSended(Message message, Chat chat)
+        public override async Task MessageSended(Message message, Chat chat)
         {
+            Logger?.LogInformation("Notifyer MessageSended");
+
             var model = new MessageModel(message, Client.IsUserOnline(message.User.Id));
             foreach (var user in chat.Users)
             {
@@ -157,18 +163,20 @@ namespace ServerClasses
                     if (Client.IsUserOnline(user.Id))
                     {
                         var userEndpoint = Client.GetOnlineUserEndpoint(user.Id);
-                        userEndpoint.SendNotify(model, NotifyType.MessageSended);
+                        await userEndpoint.SendNotify(model, NotifyType.MessageSended);
                     }
                 }
                 else
                 {
-                    Endpoint.SendNotify(model, NotifyType.MessageSended);
+                    await Endpoint.SendNotify(model, NotifyType.MessageSended);
                 }
             }
         }
 
         public List<User> GetRelativeUsers()
         {
+            Logger?.LogInformation("Notifyer GetRelativeUsers");
+
             List<User> res = new List<User>();
             using (var db = new ServerDbContext())
             {
@@ -189,15 +197,17 @@ namespace ServerClasses
             return res;
         }
 
-        public override void UserChangeStatus()
+        public override async Task UserChangeStatus()
         {
+            Logger?.LogInformation("Notifyer UserChangeStatus");
+
             var rel = GetRelativeUsers();
             foreach (var user in rel)
             {
                 if (Client.IsUserOnline(user.Id))
                 {
                     var net = Client.GetOnlineUserEndpoint(user.Id);
-                    net.SendNotify(new UserStatusModel(Client.User, Client.IsUserOnline(Client.User.Id)),NotifyType.UserChangeStatus);
+                    await net.SendNotify(new UserStatusModel(Client.User, Client.IsUserOnline(Client.User.Id)),NotifyType.UserChangeStatus);
                 }
             }
         }

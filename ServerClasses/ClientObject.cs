@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using NetModelsLibrary;
 using ServerDatabase;
 using System;
@@ -12,19 +13,27 @@ namespace ServerClasses
 {
     public class ClientObject : ClientBase
     {
-        private static Dictionary<int, ClientObject> UsersOnline { get; set; } = new Dictionary<int, ClientObject>();
+        private static HashSet<int> UsersOnline { get; set; } = new HashSet<int>();
         public const int PageSize = 20;
 
-        private User? _user;
+        private int? _userId;
 
         public event Action<User> OnDisconected;
 
-        public User User
+        public override User User
         {
             get
             {
-                if (_user != null) return _user;
-                else return new User()
+                if (_userId > 0)
+                {
+                    User? user;
+                    using (ServerDbContext db = new ServerDbContext())
+                    {
+                        user = db.Users.Find(_userId);
+                    }
+                    if (user != null) return user;
+                }
+                return new User()
                 {
                     Id = -1,
                     Login = "unknown",
@@ -32,7 +41,7 @@ namespace ServerClasses
                     PasswordMD5 = "unknown"
                 };
             }
-            set { _user = value; }
+            set { _userId = value.Id; }
         }
 
         public override void Disconect()
@@ -43,26 +52,13 @@ namespace ServerClasses
 
         public override void UserOnline()
         {
-            //try
-            //{
-            //    UsersOnline.Add(User.Id, this);
-            //    Notifyer.UserChangeStatus();
-            //}
-            //catch { }
+            if (_userId != null) UsersOnline.Add(_userId.Value);
+            Notifyer.UserChangeStatus();
         }
         public override void UserOffline()
         {
-            //try
-            //{
-            //    UsersOnline.Remove(User.Id);
-            //    using (var db = new ServerDbContext())
-            //    {
-            //        User.LastOnline = DateTime.Now;
-            //        db.SaveChanges();
-            //    }
-            //    Notifyer.UserChangeStatus();
-            //}
-            //catch{}
+            if (_userId != null) UsersOnline.Remove(_userId.Value);
+            Notifyer.UserChangeStatus();
         }
 
         public override ServerEndpoint GetOnlineUserEndpoint(int userId)
@@ -72,14 +68,28 @@ namespace ServerClasses
 
         public override bool IsUserOnline(int userId)
         {
-            return true /*UsersOnline.ContainsKey(userId)*/;
+            return UsersOnline.Contains(userId);
         }
 
         public override void SetUser(int userId)
         {
-            using (ServerDbContext db = new ServerDbContext())
+            Logger?.LogInformation("ClientObject SetUser with id: " + userId);
+            try
             {
-                _user = db.Users.Find(userId);
+                using (ServerDbContext db = new ServerDbContext())
+                {
+                    var user = db.Users.Find(userId);
+                    if (user == null)
+                    {
+                        throw new Exception($"User with this id '{userId}' not found");
+                    }
+                    Logger?.LogInformation($"User found: Id: {user.Id}, Login: {user.Login}, Name: {user.Name}");
+                    _userId = user.Id;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger?.LogError("ClientObject SetUser Exception: {0}         StackTrace: {1}", ex.Message, ex.StackTrace);
             }
         }
     }

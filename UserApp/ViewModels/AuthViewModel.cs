@@ -42,27 +42,34 @@ namespace UserApp.ViewModels
 
         public ICommand Authorize => new RelayCommand(async o =>
         {
-            Connect();
-            try
+            if (Login != null && Login != "")
             {
-                Invoke(await Connection.Endpoint.Authorize(Login, ((PasswordBox)o).Password));
-            }
-            catch (Exception ex)
-            {
-                Invoke(new ResoultModel(false, ex.Message));
+                Connect();
+                try
+                {
+                    Invoke(await Connection.Endpoint.Authorize(Login, ((PasswordBox)o).Password));
+                }
+                catch (Exception ex)
+                {
+                    Invoke(new ResoultModel(false, ex.Message));
+                }
             }
         }, o => o != null && Login != null);
         public ICommand Register => new RelayCommand(async o =>
         {
-            Connect();
-            try
+            if (Login != null && Username != null && Login != "" && Username != "")
             {
-                Invoke(await Connection.Endpoint.Register(Login, ((PasswordBox)o).Password, Username));
+                Connect();
+                try
+                {
+                    Invoke(await Connection.Endpoint.Register(Login, ((PasswordBox)o).Password, Username));
+                }
+                catch (Exception ex)
+                {
+                    Invoke(new ResoultModel(false, ex.Message));
+                }
             }
-            catch (Exception ex)
-            {
-                Invoke(new ResoultModel(false, ex.Message));
-            }
+            
         }, o => o != null && Login != null && Username != null);
 
         private static string CreateMD5(string input)

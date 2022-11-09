@@ -42,7 +42,7 @@ namespace UserApp.Controllers
             };
         }
 
-        public async void LoadChatsAsync()
+        public async Task LoadChatsAsync()
         {
             await Connection.Endpoint.SendObject(new RequestWrap(RequestType.GetAllChats, Connection.Endpoint.sessionId));
             var allchats = await Connection.Endpoint.ReceiveReply<NetModelsLibrary.Models.AllChatsModel>();
@@ -62,7 +62,7 @@ namespace UserApp.Controllers
                     ChatId = SelectedChatModel.Id,
                     From = From,
                 });
-                return Connection.Endpoint.ReceiveReply<NetModelsLibrary.Models.MessagesPageModel>().Result;
+                return await Connection.Endpoint.ReceiveReply<NetModelsLibrary.Models.MessagesPageModel>();
             }
             return new NetModelsLibrary.Models.MessagesPageModel() { Messages = new List<NetModelsLibrary.Models.MessageModel>(), From = From, To = From};
         }

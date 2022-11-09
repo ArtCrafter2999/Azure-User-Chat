@@ -27,33 +27,32 @@ namespace UserApp.Controllers
         {
             try
             {
-                //while (true)
-                //{
-                //    IConfigurationBuilder builder = new ConfigurationBuilder().AddJsonFile("appsettings.json");
-                //    IConfigurationRoot configuration = builder.Build();
-                //    var Raw = await Connection.Endpoint.ReceiveNotify();
-                //    var Info = ClientEndpoint.Deserialize<BusTypeModel>(Raw);
-                //    switch (Info.Type)
-                //    {
-                //        case BusType.ChatCreated:
-                //            ChatCreated(ClientEndpoint.Deserialize<ChatModel>(Raw));
-                //            break;
-                //        case BusType.MessageSended:
-                //            MessageSended(ClientEndpoint.Deserialize<MessageModel>(Raw));
-                //            break;
-                //        case BusType.UserChangeStatus:
-                //            UserChangeStatus(ClientEndpoint.Deserialize<UserStatusModel>(Raw));
-                //            break;
-                //        case BusType.ChatChanged:
-                //            ChatChanged(ClientEndpoint.Deserialize<ChatModel>(Raw));
-                //            break;
-                //        case BusType.ChatDeleted:
-                //            ChatDeleted(ClientEndpoint.Deserialize<IdModel>(Raw));
-                //            break;
-                //        default:
-                //            break;
-                //    }
-                //}
+                while (true)
+                {
+                    IConfigurationBuilder builder = new ConfigurationBuilder().AddJsonFile("appsettings.json");
+                    IConfigurationRoot configuration = builder.Build();
+                    var Raw = await Connection.Endpoint.ReceiveNotify();
+                    switch (Raw.Type)
+                    {
+                        case NotifyType.ChatCreated:
+                            ChatCreated(BusSerializer.Deserialize<ChatModel>(Raw.RawObject));
+                            break;
+                        case NotifyType.MessageSended:
+                            MessageSended(BusSerializer.Deserialize<MessageModel>(Raw.RawObject));
+                            break;
+                        case NotifyType.UserChangeStatus:
+                            UserChangeStatus(BusSerializer.Deserialize<UserStatusModel>(Raw.RawObject));
+                            break;
+                        case NotifyType.ChatChanged:
+                            ChatChanged(BusSerializer.Deserialize<ChatModel>(Raw.RawObject));
+                            break;
+                        case NotifyType.ChatDeleted:
+                            ChatDeleted(BusSerializer.Deserialize<IdModel>(Raw.RawObject));
+                            break;
+                        default:
+                            break;
+                    }
+                }
             }
             catch (OperationCanceledException)
             {

@@ -10,11 +10,6 @@ namespace ServerClasses
 {
     public abstract class RequestHandlerBase : ClientModelBase
     {
-        public override ServerEndpoint Endpoint { get => Client.Endpoint; set { Client.Endpoint = value; } }
-        public override RequestResponseBase Respondent { get => Client.Respondent; set { Client.Respondent = value; } }
-        public override RequestListenerBase Listener { get => Client.Listener; set { Client.Listener = value; } }
-        public override ClientsNotifyerBase Notifyer { get => Client.Notifyer; set { Client.Notifyer = value; } }
-        public override RequestHandlerBase Handler { get => Client.Handler; set { Client.Handler = value; } }
 
         /// <summary>
         /// Registration request which contain login username and password in MD5
@@ -80,6 +75,11 @@ namespace ServerClasses
         /// Expects IdModel witch is chat id. Returns nothing  
         /// </summary>
         public abstract Task OnDeleteChat(IdModel model);
+        /// <summary>
+        /// Request to log out app which sends when app is closing
+        /// After this server not expects anything and returns nothing
+        /// </summary>
+        public abstract Task OnLogOut();
         public RequestHandlerBase(RequestListenerBase listenerBase)
         {
             listenerBase.OnAuth += o => OnAuth(o);
@@ -93,6 +93,7 @@ namespace ServerClasses
             listenerBase.OnRegistration += o => OnRegistration(o);
             listenerBase.OnSearchUsers += o => OnSearchUsers(o);
             listenerBase.OnSendMessage += o => OnSendMessage(o);
+            listenerBase.OnLogOut += () => OnLogOut();
         }
     }
 }

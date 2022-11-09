@@ -30,7 +30,7 @@ namespace UserApp.ViewModels
 
         private double prevPos = 0;
         private bool scrollToPrev = false;
-        private void CheckTop(object sender, ScrollChangedEventArgs e)
+        private async void CheckTop(object sender, ScrollChangedEventArgs e)
         {
             if (scrollToPrev)
             {
@@ -41,7 +41,7 @@ namespace UserApp.ViewModels
             {
                 if (!selectedChat.IsEnd)
                 {
-                    MessagesUp(LoadMessages());
+                    MessagesUp(await LoadMessages());
                     scrollToPrev = true;
                 }
             }
@@ -50,11 +50,11 @@ namespace UserApp.ViewModels
                 prevPos = MainWindow.MessageScroll.ScrollableHeight;
             }
         }
-        public List<MessageModel> LoadMessages()
+        public async Task<List<MessageModel>> LoadMessages()
         {
             if (!selectedChat.IsEnd)
             {
-                var messagespage = Controller.LoadMessagesAsync(selectedChat.Loaded).Result;
+                var messagespage = await Controller.LoadMessagesAsync(selectedChat.Loaded);
                 selectedChat.Loaded += messagespage.To;
                 selectedChat.IsEnd = messagespage.IsEnd;
                 var newmessages = new List<MessageModel>();
@@ -117,7 +117,7 @@ namespace UserApp.ViewModels
                 MainWindow.MessageScroll.UpdateLayout();
             }
         }
-        public void ChatChanged()
+        public async void ChatChanged()
         {
             OnPropertyChanged(nameof(IsSelected));
             MainWindow.MessagesStack.Children.Clear();
@@ -129,7 +129,7 @@ namespace UserApp.ViewModels
                 }
                 else if (selectedChat.Loaded == 0)
                 {
-                    MessagesDownWithScroll(LoadMessages());
+                    MessagesDownWithScroll(await LoadMessages());
                 }
                 else
                 {

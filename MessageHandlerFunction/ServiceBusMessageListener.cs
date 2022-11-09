@@ -1,4 +1,5 @@
 ﻿using Azure.Messaging.ServiceBus;
+using Microsoft.Extensions.Logging;
 using NetModelsLibrary;
 using ServerClasses;
 using System;
@@ -17,8 +18,17 @@ namespace MessageHandlerFunction
     {
         public void Invoke(RequestWrap wrap)
         {
-            if (wrap.Type != RequestType.Registration && wrap.Type != RequestType.Auth) Client.SetUser(int.Parse(wrap.ID));
-            Invoke(wrap.Type, wrap.RawObject);
+            Logger?.LogInformation("ServiceBusMessageListener Invoke with id: " + wrap.ID);
+            try
+            {
+                if (wrap.Type != RequestType.Registration && wrap.Type != RequestType.Auth) Client.SetUser(int.Parse(wrap.ID));
+                Invoke(wrap.Type, wrap.RawObject);
+            }
+            catch (Exception ex)
+            {
+                Logger?.LogError("ServiceBusMessageListener Exeption: {0}", ex.Message);
+            }
+            
         }
     }
 }

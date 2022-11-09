@@ -37,11 +37,6 @@ namespace UserApp.ViewModels
             ResoultView.AddBind(AuthView);
 
             AuthView.Visibility = true;
-
-            AuthView.Success += model =>
-            {
-                HideAll();
-            };
         }
     }
 }

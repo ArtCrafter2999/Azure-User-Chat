@@ -6,17 +6,12 @@ using System.Text;
 using System.Threading.Tasks;
 using ServerDatabase;
 using NetModelsLibrary.Models;
+using Microsoft.Extensions.Logging;
 
 namespace ServerClasses
 {
     public abstract class RequestResponseBase : ClientModelBase
     {
-        public override ServerEndpoint Endpoint { get => Client.Endpoint; set { Client.Endpoint = value; } }
-        public override RequestResponseBase Respondent { get => Client.Respondent; set { Client.Respondent = value; } }
-        public override RequestListenerBase Listener { get => Client.Listener; set { Client.Listener = value; } }
-        public override ClientsNotifyerBase Notifyer { get => Client.Notifyer; set { Client.Notifyer = value; } }
-        public override RequestHandlerBase Handler { get => Client.Handler; set { Client.Handler = value; } }
-
         public abstract Task ResponseSuccess(RequestType type, string message);
         public abstract Task ResponseFailure(RequestType type, string message);
         public abstract Task ResponseChats(IEnumerable<Chat> chats);

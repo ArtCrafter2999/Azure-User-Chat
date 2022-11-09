@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NetModelsLibrary;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
@@ -13,8 +14,9 @@ namespace UserApp
     /// </summary>
     public partial class App : Application
     {
-        private void Application_Exit(object sender, ExitEventArgs e)
+        private async void Application_Exit(object sender, ExitEventArgs e)
         {
+            await Connection.Endpoint.SendObject(new RequestWrap(RequestType.LogOut, Connection.Endpoint.sessionId));
             if (Connection.IsConnected)
             {
                 Connection.Disconect();

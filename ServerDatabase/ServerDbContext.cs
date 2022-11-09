@@ -23,7 +23,9 @@ namespace ServerDatabase
         }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlServer("Server=tcp:user-chat.database.windows.net,1433;Initial Catalog=User-Chat-Database;Persist Security Info=False;User ID=AdminLogin;Password=AdminPassword!;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;");
+            var connectionstring = Environment.GetEnvironmentVariable("ServerDBConnection", EnvironmentVariableTarget.Process);
+            if (connectionstring == null) throw new Exception("ServerDBConnection Connection String not founded");
+            optionsBuilder.UseSqlServer(connectionstring);
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

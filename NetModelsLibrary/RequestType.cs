@@ -72,5 +72,10 @@ namespace NetModelsLibrary
         /// Expects IdModel witch is chat id. Returns nothing  
         /// </summary>
         DeleteChat,
+        /// <summary>
+        /// Request to log out app which sends when app is closing
+        /// After this server not expects anything and returns nothing
+        /// </summary>
+        LogOut,
     }
 }

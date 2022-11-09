@@ -21,40 +21,50 @@ namespace MessageHandlerFunction
     public class Function1
     {
         [FunctionName("Function1")]
-        public void Run([ServiceBusTrigger("requests", Connection = "ConnectionString")]string message, ILogger log)
+        public void Run([ServiceBusTrigger("requests", Connection = "ConnectionString")] string message, ILogger log)
         {
-            var type = Deserialize<RequestWrap>(message);
-            log.LogInformation("Received " + type.Type);
+            var type = BusSerializer.Deserialize<RequestWrap>(message);
+            log.LogInformation("Received " + type.Type + "   raw:" + type.RawObject + "    ID:" + type.ID);
 
-
-            ClientFactory factory = new ClientFactory();
-            factory.Client = new ClientObject();
-            factory.Endpoint = new ServerEndpoint(type.ID);
-            factory.Listener = new ServiceBusMessageListener();
-            factory.Respondent = new RequestResponse();
-            factory.Handler = new RequestHandler(factory.Listener);
-            factory.Notifyer = new ClientsNotifyer();
-            var client = factory.MakeClient();
-
-            (client.Listener as ServiceBusMessageListener).Invoke(type);
-            Thread.Sleep(10_000);
-            client.Listener = null;
-            client.Endpoint.TokenSource.Cancel();
-            client.Endpoint = null;
-            client.Handler = null;
-            client.Notifyer = null;
-            client.Respondent = null;
-            client = null;
-        }
-        private static T Deserialize<T>(string s)
-        {
-            XmlSerializer serializer = new(typeof(T));
-            using (TextReader tr = new StringReader(s))
+            try
             {
-                T? res = (T?)serializer.Deserialize(tr);
-                if (res == null) throw new Exception("Deserialization returned null");
-                return res;
+                log.LogInformation("Try started");
+                ClientFactory factory = new ClientFactory();
+                log.LogInformation("Factory created");
+                factory.Client = new ClientObject();
+                log.LogInformation("Client created");
+                factory.Endpoint = new ServerEndpoint(type.ID);
+                log.LogInformation("Endpoint created");
+                factory.Listener = new ServiceBusMessageListener();
+                log.LogInformation("Listener created");
+                factory.Respondent = new RequestResponse();
+                log.LogInformation("Respondent created");
+                factory.Handler = new RequestHandler(factory.Listener);
+                log.LogInformation("Handler created");
+                factory.Notifyer = new ClientsNotifyer();
+                log.LogInformation("Notifyer created");
+                factory.Logger = log;
+
+                var client = factory.MakeClient();
+                log.LogInformation("client maked");
+
+                (client.Listener as ServiceBusMessageListener).Invoke(type);
+
+                Thread.Sleep(10_000);
+
+                client.Listener = null;
+                client.Endpoint.TokenSource.Cancel();
+                client.Endpoint = null;
+                client.Handler = null;
+                client.Notifyer = null;
+                client.Respondent = null;
+                client = null;
             }
+            catch (Exception ex)
+            {
+                log.LogError("Root Exception: {0},   stacktrace: {1}", ex.Message, ex.StackTrace);
+            }
+
         }
     }
 }

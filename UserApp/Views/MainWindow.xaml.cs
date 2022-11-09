@@ -81,10 +81,11 @@ namespace UserApp.Views
             OverlayGrid.AuthView.Success += _ => UpdateChatView();
         }
 
-        public void UpdateChatView()
+        public async void UpdateChatView()
         {
-            ChatController.LoadChatsAsync();
+            await ChatController.LoadChatsAsync();
             SortChats();
+            OverlayGrid.HideAll();
         }
 
         public void SortChats()

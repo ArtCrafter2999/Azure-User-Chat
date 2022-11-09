@@ -17,26 +17,46 @@ namespace UserApp
     public class ClientEndpoint
     {
         public CancellationToken Token { get; set; }
-        public string sessionId { get; set; }
-        IConfigurationBuilder builder => new ConfigurationBuilder().AddJsonFile("appsettings.json");
-        IConfigurationRoot configuration => builder.Build();
+        public string sessionId { get; set; } = "";
 
-        ServiceBusClient serviceBusClient => new ServiceBusClient(configuration["ConnectionString"]);
+
+        string _connectionString;
+        string _replyQueueName;
+        string _requestQueueName;
+        string _notifyerQueueName;
+
+        public ClientEndpoint()
+        {
+            IConfigurationBuilder builder = new ConfigurationBuilder().AddJsonFile("appsettings.json");
+            IConfigurationRoot configuration = builder.Build();
+            _connectionString = configuration["ConnectionString"];
+            _replyQueueName = configuration["ReplyQueueName"];
+            _requestQueueName = configuration["RequestQueueName"];
+            _notifyerQueueName = configuration["NotifyerQueueName"];
+        }
         public async Task SendRequest<T>(RequestType type, T obj)
         {
             await SendObject(new RequestWrap(type, sessionId, BusSerializer.Serialize(obj)));
         }
         private async Task<string> Receive(string QueueName)
         {
-            var receiver = await serviceBusClient.AcceptSessionAsync(QueueName, sessionId, cancellationToken: Token);
-            var replyMsg = await receiver.ReceiveMessageAsync(cancellationToken: Token);
+            await using (var serviceBusClient = new ServiceBusClient(_connectionString))
+            {
+                await using (var receiver = await serviceBusClient.AcceptSessionAsync(QueueName, sessionId, cancellationToken: Token))
+                {
+                    var replyMsg = await receiver.ReceiveMessageAsync(cancellationToken: Token);
 
-            if (replyMsg == null) throw new Exception("Failed to get reply from server");
-            return replyMsg.Body.ToString();
+                    if (replyMsg == null) throw new Exception("Failed to get reply from server");
+                    var body = replyMsg.Body.ToString();
+                    await receiver.CompleteMessageAsync(replyMsg);
+                    return body;
+                    throw new Exception("Failed to get reply from server");
+                }
+            }
         }
-        public async Task<T> ReceiveReply<T>() => BusSerializer.Deserialize<T>(await Receive(configuration["ReplyQueueName"]));
-        public async Task<string> ReceiveReplyRaw() => await Receive(configuration["ReplyQueueName"]);
-        public async Task<NotifyWrap> ReceiveNotify() => BusSerializer.Deserialize<NotifyWrap>(await Receive(configuration["NotifyerQueueName"]));
+        public async Task<T> ReceiveReply<T>() => BusSerializer.Deserialize<T>(await Receive(_replyQueueName));
+        public async Task<string> ReceiveReplyRaw() => await Receive(_replyQueueName);
+        public async Task<NotifyWrap> ReceiveNotify() => BusSerializer.Deserialize<NotifyWrap>(await Receive(_notifyerQueueName));
         public async Task<ResoultModel> Authorize(string Login, string Password)
         {
             try
@@ -55,7 +75,7 @@ namespace UserApp
             }
             catch (Exception ex)
             {
-                return new ResoultModel(RequestType.Auth, true, ex.Message);
+                return new ResoultModel(RequestType.Auth, false, ex.Message);
             }
         }
         public async Task<ResoultModel> Register(string Login, string Password, string Name)
@@ -77,7 +97,7 @@ namespace UserApp
             }
             catch (Exception ex)
             {
-                return new ResoultModel(RequestType.Registration, true, ex.Message);
+                return new ResoultModel(RequestType.Registration, false, ex.Message); ;
             }
         }
         private static string CreateMD5(string input)
@@ -100,12 +120,15 @@ namespace UserApp
 
         public async Task SendObject<T>(T obj)
         {
-            var sender = serviceBusClient.CreateSender(configuration["RequestQueueName"]);
-
-            var body = BusSerializer.Serialize(obj);
-            var requestMsg = new ServiceBusMessage(body);
-            requestMsg.SessionId = sessionId;
-            await sender.SendMessageAsync(requestMsg, Token);
+            await using (var serviceBusClient = new ServiceBusClient(_connectionString))
+            {
+                await using (var sender = serviceBusClient.CreateSender(_requestQueueName))
+                {
+                    var body = BusSerializer.Serialize(obj);
+                    var requestMsg = new ServiceBusMessage(body);
+                    await sender.SendMessageAsync(requestMsg, Token);
+                }
+            }          
         }
     }
 }
